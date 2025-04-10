@@ -30,14 +30,14 @@ module.exports = {
         allowNull: false,
       },
       created_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"),
       },
       updated_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"),
       },
     });
   },

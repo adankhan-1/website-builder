@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { login } from "../api/index.js";
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
+  const { setUserId } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -16,8 +18,12 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await login(formData);
-      console.log("Login successful:", response.data);
+
+      const response = await login(formData); // ✅ response is assigned here
+      console.log("Login successful:", response);
+      const userId = response.data.userId;     // ✅ read only after successful response
+      setUserId(userId);                       // ✅ update auth context
+      localStorage.setItem('userId', userId);
       navigate('/dashboard');
     } catch (err) {
       console.error("Login failed:", err.response?.data?.message || err.message);
