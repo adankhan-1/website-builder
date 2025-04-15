@@ -12,3 +12,16 @@ export const getAllTemplates  = async (req, res) => {
       }
 
 };
+
+export const getTemplateById = async (req, res) => {
+
+    try {
+        const template = await Template.findOne({ where: { id: req.params.id } });
+        return res.status(200).json({ template });
+    
+      } catch (err) {
+        console.error("Error fetching template:", err);
+        return res.status(500).json({ message: "Failed to fetch template due to server error" });
+      }
+
+};

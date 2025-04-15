@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import Editor from './pages/Editor';
+import EditTemplate from './pages/EditTemplate';
 import Templates from './pages/Templates';
 import './App.css';
 import PrivateRoute from './routes/PrivateRoute';
@@ -30,7 +30,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        <Route path="/editor/:id" element={<Editor />} />
+        <Route path="/edit-template/:templateId" element={<EditTemplate />} />
       </Routes>
     </BrowserRouter>
   );

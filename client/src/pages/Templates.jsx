@@ -17,6 +17,18 @@ const TemplatesPage = () => {
     fetchTemplates();
   }, []);
 
+  // Live Preview handler
+  const handleLivePreview = (templateId) => {
+    console.log("Clicked Live Preview:", templateId);
+    const previewUrl = `http://localhost:3000/live-preview/${templateId}`;
+    window.open(previewUrl, '_blank');
+  };
+
+  const handleEditTemplate = (templateId) => {
+    const editUrl = `http://localhost:5173/edit-template/${templateId}`;
+    window.open(editUrl, '_blank');
+  };
+
   return (
     <div className="p-6">
       <h2 className="text-2xl font-semibold mb-4">Available Templates</h2>
@@ -34,10 +46,16 @@ const TemplatesPage = () => {
             <div className="p-4">
               <h3 className="text-lg font-medium">{template.name}</h3>
               <div className="mt-2 flex space-x-2">
-                <button className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600">
+                <button
+                  className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600"
+                  onClick={() => handleLivePreview(template.id)}
+                >
                   Live Preview
                 </button>
-                <button className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600">
+                <button 
+                    className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600"
+                    onClick={() => handleEditTemplate(template.id)}
+                >
                   Edit Template
                 </button>
               </div>
