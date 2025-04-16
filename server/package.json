@@ -6,7 +6,6 @@
   "scripts": {
     "start": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "migrate": "sequelize-cli db:migrate --env development --config config/sequelize-cli-config.cjs"
   },
   "keywords": [],
   "author": "",
