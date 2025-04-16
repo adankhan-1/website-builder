@@ -19,10 +19,10 @@ export default function Login() {
 
     try {
 
-      const response = await login(formData); // ✅ response is assigned here
+      const response = await login(formData); // response is assigned here
       console.log("Login successful:", response);
-      const userId = response.data.userId;     // ✅ read only after successful response
-      setUserId(userId);                       // ✅ update auth context
+      const userId = response.data.userId;     // read only after successful response
+      setUserId(userId);                       // update auth context
       localStorage.setItem('userId', userId);
       navigate('/dashboard');
     } catch (err) {
@@ -79,7 +79,7 @@ export default function Login() {
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-cyan-400 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-cyan-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+              className="flex w-full justify-center rounded-md bg-cyan-500 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-cyan-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700"
             >
               Sign in
             </button>

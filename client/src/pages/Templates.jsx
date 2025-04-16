@@ -25,7 +25,7 @@ const TemplatesPage = () => {
   };
 
   const handleEditTemplate = (templateId) => {
-    const editUrl = `http://localhost:5173/edit-template/${templateId}`;
+    const editUrl = `http://localhost:5173/create-project/${templateId}`;
     window.open(editUrl, '_blank');
   };
 

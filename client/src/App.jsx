@@ -7,6 +7,8 @@ import Templates from './pages/Templates';
 import Projects from './pages/Projects';
 import './App.css';
 import PrivateRoute from './routes/PrivateRoute';
+import EditProject from './pages/EditProject';
+import CreateProject from './pages/CreateProject';
 
 export default function App() {
   return (
@@ -39,7 +41,26 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        <Route path="/edit-template/:templateId" element={<EditTemplate />} />
+        <Route
+          path="/create-project/:templateId"
+          element={
+            <PrivateRoute>
+              <CreateProject />
+            </PrivateRoute>
+          }
+        />
+        <Route 
+          path="/edit-template/:templateId/:projectId" 
+          element={
+            <EditTemplate />
+          } 
+        />
+        <Route 
+          path="/edit-project/:projectId" 
+          element={
+            <EditProject />
+          } 
+        />
       </Routes>
     </BrowserRouter>
   );

@@ -1,12 +1,24 @@
 import Project from '../models/project.js';
-import pathModule from 'path';
 
 export const insertProject = async (req, res) => {
   try {
-    const { templateId, content, userId, name } = req.body;
+    const { templateId, content, userId, name, projectId } = req.body;
 
-    if (!templateId || !content || !userId) {
+    if (!templateId || !userId) {
       return res.status(400).json({ error: 'Incomplete data received' });
+    }
+
+    if(projectId) {
+      const existingProject = await Project.findByPk(projectId);
+      if (!existingProject) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+
+      await existingProject.update({
+        content,
+      });
+
+      return res.status(200).json({ message: 'Project updated successfully', project: existingProject });
     }
 
     const project = await Project.create({
@@ -16,38 +28,40 @@ export const insertProject = async (req, res) => {
       name,
     });
 
-    const fixedContent = content.map(file => {
-      let newContent = file.content;
-    
-      if (file.path.endsWith('.html') || file.path.endsWith('.css') || file.path.endsWith('.scss')) {
-        // Clean up existing preview URLs if re-saving
-        // newContent = newContent.replace(/http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\//g, '');
-    
-        // newContent = newContent.replace(/(src|href)=["'](?!https?:\/\/)([^"']+)["']/g, (match, attr, pathValue) => {
-        //   const normalizedPath = pathModule.posix.normalize(pathValue);
-        //   return `${attr}="http://localhost:3000/live-preview/project/${project.id}/assets/${normalizedPath}"`;
-        // });
-        
-        // newContent = newContent.replace(/url\(["']?(?!https?:\/\/)([^"')]+)["']?\)/g, (match, pathValue) => {
-        //   const normalizedPath = pathModule.posix.normalize(pathValue);
-        //   return `url("http://localhost:3000/live-preview/project/${project.id}/assets/${normalizedPath}")`;
-        // });
-
-        newContent = newContent.replace(
-          /http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\/([^"')\s]+)/g,
-          (match, remainingPath) => {
-            return `http://localhost:3000/live-preview/project/${project.id}/assets/${remainingPath}`;
-          }
-        );
-      }
-    
-      return {
-        ...file,
-        content: newContent,
-      };
-    });
-    
-    await project.update({ content: fixedContent });
+    if (content) {
+      const fixedContent = content.map(file => {
+        let newContent = file.content;
+      
+        if (file.path.endsWith('.html') || file.path.endsWith('.css') || file.path.endsWith('.scss')) {
+          // Clean up existing preview URLs if re-saving
+          // newContent = newContent.replace(/http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\//g, '');
+      
+          // newContent = newContent.replace(/(src|href)=["'](?!https?:\/\/)([^"']+)["']/g, (match, attr, pathValue) => {
+          //   const normalizedPath = pathModule.posix.normalize(pathValue);
+          //   return `${attr}="http://localhost:3000/live-preview/project/${project.id}/assets/${normalizedPath}"`;
+          // });
+          
+          // newContent = newContent.replace(/url\(["']?(?!https?:\/\/)([^"')]+)["']?\)/g, (match, pathValue) => {
+          //   const normalizedPath = pathModule.posix.normalize(pathValue);
+          //   return `url("http://localhost:3000/live-preview/project/${project.id}/assets/${normalizedPath}")`;
+          // });
+  
+          newContent = newContent.replace(
+            /http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\/([^"')\s]+)/g,
+            (match, remainingPath) => {
+              return `http://localhost:3000/live-preview/project/${project.id}/assets/${remainingPath}`;
+            }
+          );
+        }
+      
+        return {
+          ...file,
+          content: newContent,
+        };
+      });
+      
+      await project.update({ content: fixedContent });
+    }
 
     res.status(201).json({ message: 'Project saved successfully', project });
   } catch (err) {
@@ -58,16 +72,21 @@ export const insertProject = async (req, res) => {
 
 export const getProject = async (req, res) => {
     try {
-      const project = await Project.findByPk(req.params.id);
-      if (!project) return res.status(404).send('Not found');
+      const id = req.params.id;
   
-      const htmlContent = project.content['data'];
+      const project = await Project.findOne({
+        where: { id },
+      });
   
-      res.set('Content-Type', 'text/html');
-      res.send(htmlContent);
-    } catch (err) {
-      console.error(err);
-      res.status(500).send('Server error');
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+  
+      res.status(200).json({ project });
+    }
+    catch (err) {
+      console.error('Error fetching project:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   };
   

@@ -1,50 +1,46 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 
-const EditTemplate = () => {
-  const { templateId, projectId: routeProjectId } = useParams();
+const EditProject = () => {
+  const { projectId } = useParams();
   const iframeRef = useRef(null);
   const [iframeHtml, setIframeHtml] = useState('');
   const [templateContent, setTemplateContent] = useState([]);
-  const [selectedPage, setSelectedPage] = useState('index.html'); // Track selected page
-  const [projectId, setProjectId] = useState(null);
+  const [selectedPage, setSelectedPage] = useState('index.html');
+  const [currentProjectId, setCurrentProjectId] = useState(null);
+  const [templateId, setTemplateId] = useState(null);
 
   useEffect(() => {
-    const fetchTemplate = async () => {
+    const fetchProject = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/template/${templateId}`);
+        console.log('Fetching project with ID:', projectId);
+        const res = await fetch(`http://localhost:3000/api/project/${projectId}`);
         const data = await res.json();
 
-        if (!data.template || !Array.isArray(data.template.content)) {
-          throw new Error('Invalid template structure received');
+        if (!data.project || !Array.isArray(data.project.content)) {
+          throw new Error('Invalid project structure received');
         }
 
-        const files = data.template.content;
-        setTemplateContent(files); // Save all files for future use
+        const files = data.project.content;
+        setTemplateContent(files);
+        setCurrentProjectId(data.project.id);
+        setTemplateId(data.project.templateId);
 
-        // Set iframe content for the initially selected page (index.html by default)
         loadPageContent('index.html', files);
-
       } catch (err) {
-        console.error('Failed to load template:', err);
+        console.error('Failed to load project:', err);
       }
     };
 
-    if (templateId) {
-      fetchTemplate();
+    if (projectId) {
+      fetchProject();
     }
+  }, [projectId]);
 
-    if (routeProjectId) {
-      setProjectId(routeProjectId);
-    }
-  }, [templateId], [routeProjectId]);
-
-  // Load the content of the selected page
   const loadPageContent = (pageName, files) => {
     const selectedFile = files.find(file => file.path === pageName);
     if (!selectedFile) return;
 
-    // 👉 Inject contenteditable into <body>
     const editableHtml = selectedFile.content.replace(
       /<body([^>]*)>/i,
       `<body$1 contenteditable="true">`
@@ -53,7 +49,6 @@ const EditTemplate = () => {
     setIframeHtml(editableHtml);
   };
 
-  // Handle page selection from the dropdown
   const handlePageChange = (event) => {
     const selectedPage = event.target.value;
     setSelectedPage(selectedPage);
@@ -63,30 +58,24 @@ const EditTemplate = () => {
   const handleSave = async () => {
     const iframe = iframeRef.current;
     if (!iframe || !iframe.contentDocument) return;
-    
+
     const bodyElement = iframe.contentDocument.body;
-    
-    // Remove contenteditable="true" from attributes
     bodyElement.removeAttribute("contenteditable");
-    
-    // Get body content
+
     const editedBodyContent = bodyElement.innerHTML;
-    
-    // Rebuild the body tag without contenteditable
+
     const bodyAttributes = Array.from(bodyElement.attributes)
       .map(attr => `${attr.name}="${attr.value}"`)
       .join(' ');
 
     const selectedFile = templateContent.find(file => file.path === selectedPage);
     if (!selectedFile) return;
-    
-    // Reconstruct full HTML with clean <body> tag
+
     const updatedHtml = selectedFile.content.replace(
       /<body[^>]*>[\s\S]*<\/body>/i,
       `<body${bodyAttributes ? ' ' + bodyAttributes : ''}>${editedBodyContent}</body>`
     );
-    
-    // Update only the content of the selected file
+
     const updatedFiles = templateContent.map(file => {
       if (file.path === selectedPage) {
         return {
@@ -110,7 +99,7 @@ const EditTemplate = () => {
         body: JSON.stringify({
           userId,
           templateId,
-          projectId,
+          projectId: currentProjectId,
           name: 'My Project',
           content: updatedFiles,
         }),
@@ -119,14 +108,12 @@ const EditTemplate = () => {
       const data = await res.json();
       if (res.ok) {
         alert('Project saved successfully!');
-      
-        // Update local state with newly saved project content
+
         const updatedProject = data.project;
         if (updatedProject?.content) {
           setTemplateContent(updatedProject.content);
           loadPageContent(selectedPage, updatedProject.content);
-
-          setProjectId(updatedProject.id);
+          setCurrentProjectId(updatedProject.id);
         }
       } else {
         alert('Failed to save: ' + data.error);
@@ -141,9 +128,8 @@ const EditTemplate = () => {
 
   return (
     <div>
-      <h2>Template Editor</h2>
-      
-      {/* Dropdown for selecting different pages */}
+      <h2>Edit Project</h2>
+
       <div>
         <label htmlFor="pageSelect">Select Page:</label>
         <select id="pageSelect" value={selectedPage} onChange={handlePageChange}>
@@ -154,10 +140,10 @@ const EditTemplate = () => {
           ))}
         </select>
       </div>
-      
+
       <iframe
         ref={iframeRef}
-        title="Template Editor"
+        title="Project Editor"
         srcDoc={iframeHtml}
         style={{ width: '100%', height: '90vh', border: '1px solid #ccc' }}
       />
@@ -169,4 +155,4 @@ const EditTemplate = () => {
   );
 };
 
-export default EditTemplate;
+export default EditProject;
