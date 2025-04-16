@@ -1,16 +1,11 @@
 import express from 'express';
-import { insertProject, getProject } from '../controllers/project.js';
+import { insertProject, getProject, getProjectsByUserId } from '../controllers/project.js';
 
 const router = express.Router();
 
 router.post('/', insertProject);
 router.get('/:id', getProject);
-
-// router.get('/', async (req, res) => {
-//   if (!req.session.userId) return res.sendStatus(401);
-//   const result = await db.query('SELECT * FROM websites WHERE user_id = $1', [req.session.userId]);
-//   res.json(result.rows);
-// });
+router.get('/user/:userId', getProjectsByUserId);
 
 // router.put('/:id', async (req, res) => {
 //   const { id } = req.params;

@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import EditTemplate from './pages/EditTemplate';
 import Templates from './pages/Templates';
+import Projects from './pages/Projects';
 import './App.css';
 import PrivateRoute from './routes/PrivateRoute';
 
@@ -27,6 +28,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <Templates />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/projects"
+          element={
+            <PrivateRoute>
+              <Projects />
             </PrivateRoute>
           }
         />

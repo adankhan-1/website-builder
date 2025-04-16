@@ -9,6 +9,10 @@ const Project = sequelize.define('Project', {
     autoIncrement: true,
     primaryKey: true,
   },
+  name: {
+    type: DataTypes.STRING(200),
+    allowNull: true,
+  },
   userId: {
     type: DataTypes.UUID,
     allowNull: false,

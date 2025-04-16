@@ -15,7 +15,7 @@ export default function Dashboard() {
 
       <button
         className="bg-green-600 text-white px-4 py-2 rounded"
-        onClick={() => navigate("/templates")}
+        onClick={() => navigate("/projects")}
       >
         View My Projects
       </button>
