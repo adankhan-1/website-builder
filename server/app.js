@@ -5,6 +5,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/project.js';
 import templateRoutes from './routes/template.js';
+import userRoutes from './routes/user.js';
 import dotenv from 'dotenv';
 import sequelize from './config/config.js';
 import Template from './models/template.js';
@@ -34,6 +35,7 @@ app.use(session({
 }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/project', projectRoutes);
 app.use('/api/template', templateRoutes);
 
@@ -126,8 +128,10 @@ app.get(/^\/live-preview\/project\/([^\/]+)\/assets\/(.*)/, async (req, res) => 
     if (!file) return res.status(404).send('File not found');
 
     // Handle image (base64) or text
-    if (/^images\//.test(filePath)) {
-      const extension = path.extname(filePath).toLowerCase();
+    const binaryExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.woff', '.woff2', '.ttf', '.eot', '.otf'];
+    const extension = path.extname(filePath).toLowerCase();
+    
+    if (binaryExtensions.includes(extension)) {
       const mimeTypes = {
         '.jpg': 'image/jpeg',
         '.jpeg': 'image/jpeg',
@@ -135,6 +139,11 @@ app.get(/^\/live-preview\/project\/([^\/]+)\/assets\/(.*)/, async (req, res) => 
         '.gif': 'image/gif',
         '.svg': 'image/svg+xml',
         '.webp': 'image/webp',
+        '.woff': 'font/woff',
+        '.woff2': 'font/woff2',
+        '.ttf': 'font/ttf',
+        '.eot': 'application/vnd.ms-fontobject',
+        '.otf': 'font/otf',
       };
       const mimeType = mimeTypes[extension] || 'application/octet-stream';
       const buffer = Buffer.from(file.content, 'base64');
@@ -142,7 +151,6 @@ app.get(/^\/live-preview\/project\/([^\/]+)\/assets\/(.*)/, async (req, res) => 
       return res.send(buffer);
     } else {
       // Assume text-based file
-      const ext = path.extname(filePath);
       const textTypes = {
         '.css': 'text/css',
         '.js': 'application/javascript',
@@ -151,7 +159,7 @@ app.get(/^\/live-preview\/project\/([^\/]+)\/assets\/(.*)/, async (req, res) => 
         '.map': 'application/json',
         '.scss': 'text/x-scss'
       };
-      const contentType = textTypes[ext] || 'text/plain';
+      const contentType = textTypes[extension] || 'text/plain';
       res.setHeader('Content-Type', contentType);
       return res.send(file.content);
     }
@@ -177,8 +185,10 @@ app.get(/^\/live-preview\/([^\/]+)\/assets\/(.*)/, async (req, res) => {
     if (!file) return res.status(404).send('File not found');
 
     // Handle image (base64) or text
-    if (/^images\//.test(filePath)) {
-      const extension = path.extname(filePath).toLowerCase();
+    const binaryExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.woff', '.woff2', '.ttf', '.eot', '.otf'];
+    const extension = path.extname(filePath).toLowerCase();
+
+    if (binaryExtensions.includes(extension)) {
       const mimeTypes = {
         '.jpg': 'image/jpeg',
         '.jpeg': 'image/jpeg',
@@ -186,6 +196,11 @@ app.get(/^\/live-preview\/([^\/]+)\/assets\/(.*)/, async (req, res) => {
         '.gif': 'image/gif',
         '.svg': 'image/svg+xml',
         '.webp': 'image/webp',
+        '.woff': 'font/woff',
+        '.woff2': 'font/woff2',
+        '.ttf': 'font/ttf',
+        '.eot': 'application/vnd.ms-fontobject',
+        '.otf': 'font/otf',
       };
       const mimeType = mimeTypes[extension] || 'application/octet-stream';
       const buffer = Buffer.from(file.content, 'base64');
@@ -193,7 +208,6 @@ app.get(/^\/live-preview\/([^\/]+)\/assets\/(.*)/, async (req, res) => {
       return res.send(buffer);
     } else {
       // Assume text-based file
-      const ext = path.extname(filePath);
       const textTypes = {
         '.css': 'text/css',
         '.js': 'application/javascript',
@@ -202,7 +216,7 @@ app.get(/^\/live-preview\/([^\/]+)\/assets\/(.*)/, async (req, res) => {
         '.map': 'application/json',
         '.scss': 'text/x-scss'
       };
-      const contentType = textTypes[ext] || 'text/plain';
+      const contentType = textTypes[extension] || 'text/plain';
       res.setHeader('Content-Type', contentType);
       return res.send(file.content);
     }

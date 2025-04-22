@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const EditProject = () => {
   const { projectId } = useParams();
@@ -40,14 +41,76 @@ const EditProject = () => {
   const loadPageContent = (pageName, files) => {
     const selectedFile = files.find(file => file.path === pageName);
     if (!selectedFile) return;
-
-    const editableHtml = selectedFile.content.replace(
-      /<body([^>]*)>/i,
-      `<body$1 contenteditable="true">`
-    );
-
+  
+    const imageEditingScript = `
+      <style>
+        .img-wrapper {
+          position: relative;
+          display: inline-block;
+        }
+        .edit-icon {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          background: rgba(0, 0, 0, 0.6);
+          color: white;
+          border-radius: 4px;
+          padding: 4px 6px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          z-index: 999;
+          user-select: none;
+        }
+      </style>
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const wrapImageWithEditor = (img) => {
+            if (img.closest('.img-wrapper')) return;
+  
+            const wrapper = document.createElement('div');
+            wrapper.className = 'img-wrapper';
+            img.parentNode.insertBefore(wrapper, img);
+            wrapper.appendChild(img);
+  
+            const icon = document.createElement('div');
+            icon.className = 'edit-icon';
+            icon.textContent = '✎';
+  
+            icon.addEventListener('click', () => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = 'image/*';
+              input.style.display = 'none';
+  
+              input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                  img.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+              };
+  
+              input.click();
+            });
+  
+            wrapper.appendChild(icon);
+          };
+  
+          const imgs = document.querySelectorAll('img');
+          imgs.forEach(wrapImageWithEditor);
+        });
+      </script>
+    `;
+  
+    const editableHtml = selectedFile.content
+      .replace(/<body([^>]*)>/i, `<body$1 contenteditable="true">`)
+      .replace(/<\/body>/i, `${imageEditingScript}</body>`);
+  
     setIframeHtml(editableHtml);
-  };
+  };  
 
   const handlePageChange = (event) => {
     const selectedPage = event.target.value;
@@ -59,24 +122,49 @@ const EditProject = () => {
     const iframe = iframeRef.current;
     if (!iframe || !iframe.contentDocument) return;
 
-    const bodyElement = iframe.contentDocument.body;
+    const doc = iframe.contentDocument;
+    const bodyElement = doc.body;
+
+    // Remove all edit icons
+    doc.querySelectorAll(".edit-icon").forEach((icon) => icon.remove());
+
+    // Unwrap images from .img-wrapper
+    doc.querySelectorAll(".img-wrapper").forEach((wrapper) => {
+      const img = wrapper.querySelector("img");
+      if (img) wrapper.parentNode.replaceChild(img, wrapper);
+    });
+
+    // Remove contenteditable
     bodyElement.removeAttribute("contenteditable");
 
+    // Remove injected scripts and styles
+    doc.querySelectorAll("script, style").forEach((tag) => {
+      if (
+        tag.textContent.includes("wrapImageWithEditor") ||
+        tag.textContent.includes(".edit-icon")
+      ) {
+        tag.remove();
+      }
+    });
+
     const editedBodyContent = bodyElement.innerHTML;
-
     const bodyAttributes = Array.from(bodyElement.attributes)
-      .map(attr => `${attr.name}="${attr.value}"`)
-      .join(' ');
+      .map((attr) => `${attr.name}="${attr.value}"`)
+      .join(" ");
 
-    const selectedFile = templateContent.find(file => file.path === selectedPage);
+    const selectedFile = templateContent.find(
+      (file) => file.path === selectedPage
+    );
     if (!selectedFile) return;
 
     const updatedHtml = selectedFile.content.replace(
       /<body[^>]*>[\s\S]*<\/body>/i,
-      `<body${bodyAttributes ? ' ' + bodyAttributes : ''}>${editedBodyContent}</body>`
+      `<body${
+        bodyAttributes ? " " + bodyAttributes : ""
+      }>${editedBodyContent}</body>`
     );
 
-    const updatedFiles = templateContent.map(file => {
+    const updatedFiles = templateContent.map((file) => {
       if (file.path === selectedPage) {
         return {
           ...file,
@@ -93,21 +181,21 @@ const EditProject = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:3000/api/project', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("http://localhost:3000/api/project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId,
           templateId,
           projectId: currentProjectId,
-          name: 'My Project',
+          name: "My Project",
           content: updatedFiles,
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        alert('Project saved successfully!');
+        alert("Project saved successfully!");
 
         const updatedProject = data.project;
         if (updatedProject?.content) {
@@ -116,43 +204,85 @@ const EditProject = () => {
           setCurrentProjectId(updatedProject.id);
         }
       } else {
-        alert('Failed to save: ' + data.error);
+        alert("Failed to save: " + data.error);
       }
     } catch (err) {
-      console.error('Save failed:', err);
-      alert('An error occurred while saving the project.');
+      console.error("Save failed:", err);
+      alert("An error occurred while saving the project.");
     }
+  };
+
+  const navigate = useNavigate();
+
+  const handleExit = () => {
+    navigate('/projects');
+  };
+
+  const handleEditFiles = () => {
+    navigate(`/edit-files/${projectId}`);
   };
 
   const htmlPages = templateContent.filter(file => file.path.endsWith('.html'));
 
   return (
-    <div>
-      <h2>Edit Project</h2>
-
-      <div>
-        <label htmlFor="pageSelect">Select Page:</label>
-        <select id="pageSelect" value={selectedPage} onChange={handlePageChange}>
-          {htmlPages.map(file => (
-            <option key={file.path} value={file.path}>
-              {file.path}
-            </option>
-          ))}
-        </select>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Project Editor</h2>
+  
+      {/* Top toolbar */}
+      <div className="flex justify-between items-center mb-4">
+        {/* Left: Select Page + Edit Files */}
+        <div className="flex items-center gap-2">
+          <label htmlFor="pageSelect" className="font-medium">
+            Select Page:
+          </label>
+          <select
+            id="pageSelect"
+            value={selectedPage}
+            onChange={handlePageChange}
+            className="border px-2 py-1 rounded"
+          >
+            {htmlPages.map((file) => (
+              <option key={file.path} value={file.path}>
+                {file.path}
+              </option>
+            ))}
+          </select>
+  
+          <button
+            onClick={handleEditFiles}
+            className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition duration-200"
+          >
+            Edit Code
+          </button>
+        </div>
+  
+        {/* Right: Save Changes + Exit Editor */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleSave}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-200"
+          >
+            Save Changes
+          </button>
+  
+          <button
+            onClick={handleExit}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200"
+          >
+            Exit Editor
+          </button>
+        </div>
       </div>
-
+  
+      {/* iFrame */}
       <iframe
         ref={iframeRef}
         title="Project Editor"
         srcDoc={iframeHtml}
-        style={{ width: '100%', height: '90vh', border: '1px solid #ccc' }}
+        style={{ width: "100%", height: "90vh", border: "1px solid #ccc" }}
       />
-
-      <div style={{ marginTop: '10px' }}>
-        <button onClick={handleSave}>Save Changes</button>
-      </div>
     </div>
   );
-};
+}  
 
 export default EditProject;

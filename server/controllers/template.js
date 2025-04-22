@@ -76,3 +76,23 @@ export const getTemplateById = async (req, res) => {
     return res.status(500).json({ message: 'Failed to fetch template due to server error' });
   }
 };
+
+export const insertTemplate = async (req, res) => {
+    const { name, content } = req.body;
+
+    if(!name || !content) {
+        return res.status(400).json({ message: "Name and content of template are required" });
+    }
+
+    try {
+        const newTemplate = await Template.create({
+            name,
+            content,
+        });
+        return res.status(201).json({ template: newTemplate });
+    
+      } catch (err) {
+        console.error("Error creating template:", err);
+        return res.status(500).json({ message: "Failed to create template due to server error" });
+      }
+}

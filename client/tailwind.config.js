@@ -4,7 +4,11 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        peach: '#FFF2E9',
+      },
+    },
   },
   plugins: [],
 };

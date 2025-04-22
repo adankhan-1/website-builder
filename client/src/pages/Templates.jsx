@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAllTemplates } from '../api/index.js';
+import LogoutButton from '../components/LogoutButton.jsx';
 
 const TemplatesPage = () => {
   const [templates, setTemplates] = useState([]);
@@ -31,6 +32,7 @@ const TemplatesPage = () => {
 
   return (
     <div className="p-6">
+      <LogoutButton />
       <h2 className="text-2xl font-semibold mb-4">Available Templates</h2>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {templates.map((template) => (
@@ -41,7 +43,7 @@ const TemplatesPage = () => {
             <img
               src={template.thumbnailUrl}
               alt={template.name}
-              className="w-full h-70 object-contain"
+              className="w-full h-60 object-cover"
             />
             <div className="p-4">
               <h3 className="text-lg font-medium">{template.name}</h3>
@@ -52,9 +54,9 @@ const TemplatesPage = () => {
                 >
                   Live Preview
                 </button>
-                <button 
-                    className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600"
-                    onClick={() => handleEditTemplate(template.id)}
+                <button
+                  className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600"
+                  onClick={() => handleEditTemplate(template.id)}
                 >
                   Edit Template
                 </button>

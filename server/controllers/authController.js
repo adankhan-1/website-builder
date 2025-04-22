@@ -42,13 +42,14 @@ export const login  = async (req, res) => {
     }
 
     req.session.userId = user.id;
-    res.status(200).json({ message: 'Login successful', userId: user.id });
+    res.status(200).json({ message: 'Login successful', user });
 
 };
 
-export const checkSession = (req, res) => {
+export const checkSession = (req, res, next) => {
     if (!req.session.userId) return res.sendStatus(401);
     res.json({ id: req.session.userId });
+    next();
 };
 
 export const logout = (req, res) => {

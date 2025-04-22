@@ -16,20 +16,33 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
-
-      const response = await login(formData); // response is assigned here
-      console.log("Login successful:", response);
-      const userId = response.data.userId;     // read only after successful response
-      setUserId(userId);                       // update auth context
-      localStorage.setItem('userId', userId);
-      navigate('/dashboard');
+      const response = await login(formData);
+      const { id, role, firstName, lastName, email, approved } = response.data.user;
+  
+      if (!approved) {
+        setErrorMessage("Account pending for approval");
+        return;
+      }
+  
+      setUserId(id);
+      localStorage.setItem('userId', id);
+      localStorage.setItem('name', `${firstName} ${lastName}`);
+      localStorage.setItem('email', email);
+      localStorage.setItem('role', role);
+  
+      if (role === 'admin') {
+        console.log("Admin login detected");
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       console.error("Login failed:", err.response?.data?.message || err.message);
       setErrorMessage("Invalid credentials, please try again");
     }
-  };
+  };  
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-white">

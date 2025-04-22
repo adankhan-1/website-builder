@@ -2,19 +2,22 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import EditTemplate from './pages/EditTemplate';
+// import EditTemplate from './pages/EditTemplate';
 import Templates from './pages/Templates';
 import Projects from './pages/Projects';
 import './App.css';
 import PrivateRoute from './routes/PrivateRoute';
 import EditProject from './pages/EditProject';
 import CreateProject from './pages/CreateProject';
+import AdminDashboard from './pages/AdminDashboard';
+import EditFiles from './pages/EditFiles';
+import LandingPage from './pages/LandingPage';
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
@@ -49,17 +52,37 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        <Route 
+        {/* <Route 
           path="/edit-template/:templateId/:projectId" 
           element={
-            <EditTemplate />
+            <PrivateRoute>
+              <EditTemplate />
+            </PrivateRoute>
           } 
-        />
+        /> */}
         <Route 
           path="/edit-project/:projectId" 
           element={
-            <EditProject />
+            <PrivateRoute>
+              <EditProject />
+            </PrivateRoute>
           } 
+        />
+        <Route
+          path="/admin-dashboard"
+          element={
+            <PrivateRoute>
+              <AdminDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/edit-files/:projectId"
+          element={
+            <PrivateRoute>
+              <EditFiles />
+            </PrivateRoute>
+          }
         />
       </Routes>
     </BrowserRouter>

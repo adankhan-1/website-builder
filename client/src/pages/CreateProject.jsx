@@ -18,6 +18,23 @@ const CreateProject = () => {
       return;
     }
 
+    let templateContent;
+    
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/template/${templateId}`
+      );
+      const data = await res.json();
+
+      if (!data.template || !Array.isArray(data.template.content)) {
+        throw new Error("Invalid template structure received");
+      }
+
+      templateContent = data.template.content;
+    } catch (err) {
+      console.error("Failed to load template:", err);
+    }
+
     try {
       const res = await fetch('http://localhost:3000/api/project', {
         method: 'POST',
@@ -25,14 +42,15 @@ const CreateProject = () => {
         body: JSON.stringify({
           name: projectName,
           userId,
-          templateId
+          templateId,
+          content: templateContent,
         }),
       });
 
       const data = await res.json();
       if (res.ok && data.project?.id) {
         const projectId = data.project.id;
-        navigate(`/edit-template/${templateId}/${projectId}`); // Redirect with projectId
+        navigate(`/edit-project/${projectId}`);
       } else {
         alert('Failed to create project: ' + data.error);
       }

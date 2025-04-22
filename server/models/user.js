@@ -27,6 +27,16 @@ const User = sequelize.define('User', {
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    role: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      defaultValue: 'user',
+    },
+    approved: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   }, {
     tableName: 'users',
     underscored: true,
