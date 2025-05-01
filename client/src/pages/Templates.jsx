@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAllTemplates } from '../api/index.js';
-import LogoutButton from '../components/LogoutButton.jsx';
+import Navbar from '../components/Navbar.jsx';
 
 const TemplatesPage = () => {
   const [templates, setTemplates] = useState([]);
@@ -31,39 +31,48 @@ const TemplatesPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <LogoutButton />
-      <h2 className="text-2xl font-semibold mb-4">Available Templates</h2>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {templates.map((template) => (
-          <div
-            key={template.id}
-            className="border rounded-lg shadow-md overflow-hidden"
-          >
-            <img
-              src={template.thumbnailUrl}
-              alt={template.name}
-              className="w-full h-60 object-cover"
-            />
-            <div className="p-4">
-              <h3 className="text-lg font-medium">{template.name}</h3>
-              <div className="mt-2 flex space-x-2">
-                <button
-                  className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600"
-                  onClick={() => handleLivePreview(template.id)}
-                >
-                  Live Preview
-                </button>
-                <button
-                  className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600"
-                  onClick={() => handleEditTemplate(template.id)}
-                >
-                  Edit Template
-                </button>
+    <div>
+      <Navbar />
+      <div className="p-6 bg-image bg-cover bg-center min-h-screen">
+        <h2 className="text-3xl font-semibold mb-6 text-gray-800">
+          Choose a template and start building !
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {templates.map((template) => (
+            <div
+              key={template.id}
+              className="rounded-xl overflow-hidden shadow-lg bg-white border hover:border-cyan-400 transition duration-300"
+            >
+              <div className="overflow-hidden">
+                <img
+                  src={template.thumbnailUrl}
+                  alt={template.name}
+                  className="w-full h-60 object-cover transform transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  {template.name}
+                </h3>
+                <div className="mt-3 flex space-x-2">
+                  <button
+                    className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition duration-200"
+                    onClick={() => handleLivePreview(template.id)}
+                  >
+                    Live Preview
+                  </button>
+                  <button
+                    className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition duration-200"
+                    onClick={() => handleEditTemplate(template.id)}
+                  >
+                    Edit Template
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

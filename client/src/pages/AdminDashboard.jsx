@@ -1,201 +1,38 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import LogoutButton from '../components/LogoutButton';
-import axios from 'axios';
-import JSZip from 'jszip';
 
-export default function AdminDashboard() {
-  const [users, setUsers] = useState([]);
-  const [filter, setFilter] = useState('all');
-  const [selectedZipFile, setSelectedZipFile] = useState(null);
-  const [templateName, setTemplateName] = useState('');
+const AdminDash = () => {
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/api/user/all');
-        setUsers(response.data.users);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  const handleApprove = async (id) => {
-    try {
-      await axios.put(`http://localhost:3000/api/user/approve/${id}`);
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === id ? { ...user, approved: true } : user
-        )
-      );
-    } catch (error) {
-      console.error('Error approving user:', error);
-    }
+  const handleNavigation = (path) => {
+    navigate(path);
   };
 
-  const handleUploadZip = async () => {
-    if (!selectedZipFile || !templateName.trim()) {
-      alert("Please select a ZIP file and enter a template name.");
-      return;
-    }
-  
-    const zip = new JSZip();
-    try {
-      const content = await zip.loadAsync(selectedZipFile);
-      const files = [];
-  
-      await Promise.all(
-        Object.keys(zip.files).map(async (filename) => {
-          const file = zip.files[filename];
-          if (!file.dir) {
-            const base64Extensions = /\.(jpg|jpeg|png|gif|eot|svg|ttf|woff2?|otf)$/i;
-            const isBase64 = base64Extensions.test(filename);
-            
-            const content = await file.async(isBase64 ? "base64" : "string");
-  
-            const parts = filename.split('/');
-            const trimmedPath = parts.slice(1).join('/');
-  
-            files.push({
-              path: trimmedPath,
-              content,
-            });
-          }
-        })
-      );
-  
-      console.log("Uploading:", { name: templateName, files });
-  
-      await axios.post('http://localhost:3000/api/template', {
-        name: templateName,
-        content: files,
-      });
-  
-      alert('Template uploaded successfully!');
-      setSelectedZipFile(null);
-      setTemplateName('');
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Failed to upload template.');
-    }
-  };  
-
-  const filteredUsers = users.filter((user) =>
-    filter === 'all' ? true : !user.approved
-  );
-
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen flex items-center justify-center bg-image px-4">
       <LogoutButton />
+      <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md text-center">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Admin Portal</h1>
 
-      {/* User Management Card */}
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
-        <h2 className="text-2xl font-semibold mb-4 text-center text-cyan-700">
-          User Management
-        </h2>
-
-        <div className="flex justify-center mb-6">
+        <div className="space-y-4">
           <button
-            className={`px-4 py-2 rounded-l-md ${
-              filter === "all" ? "bg-cyan-500 text-white" : "bg-gray-200"
-            }`}
-            onClick={() => setFilter("all")}
+            onClick={() => handleNavigation("/admin/user-management")}
+            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded"
           >
-            All
+            User Management
           </button>
+
           <button
-            className={`px-4 py-2 rounded-r-md ${
-              filter === "unapproved" ? "bg-cyan-500 text-white" : "bg-gray-200"
-            }`}
-            onClick={() => setFilter("unapproved")}
+            onClick={() => handleNavigation("/admin/template-management")}
+            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded"
           >
-            Unapproved
+            Template Management
           </button>
         </div>
-
-        <table className="min-w-full table-auto">
-          <thead>
-            <tr className="bg-gray-200 text-left">
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Joined</th>
-              {filter === "unapproved" && (
-                <th className="px-4 py-2">Actions</th>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user.id} className="border-t">
-                <td className="px-4 py-2">
-                  {user.firstName} {user.lastName}
-                </td>
-                <td className="px-4 py-2">{user.email}</td>
-                <td className="px-4 py-2">
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </td>
-                {filter === "unapproved" && (
-                  <td className="px-4 py-2">
-                    <button
-                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-                      onClick={() => handleApprove(user.id)}
-                    >
-                      Approve
-                    </button>
-                  </td>
-                )}
-              </tr>
-            ))}
-            {filteredUsers.length === 0 && (
-              <tr>
-                <td
-                  colSpan={filter === "unapproved" ? 4 : 3}
-                  className="text-center text-gray-500 py-4"
-                >
-                  No users found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Upload Template ZIP Card */}
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6 mt-8">
-        <h2 className="text-2xl font-semibold mb-4 text-center text-cyan-700">
-          Add New Template
-        </h2>
-
-        <input
-          type="text"
-          placeholder="Enter template name"
-          value={templateName}
-          onChange={(e) => setTemplateName(e.target.value)}
-          className="block w-full text-sm text-gray-700 mb-4 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-        />
-
-        <input
-          type="file"
-          accept=".zip"
-          onChange={(e) => setSelectedZipFile(e.target.files[0])}
-          className="block w-full text-sm text-gray-500 mb-4
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-cyan-50 file:text-cyan-700
-                    hover:file:bg-cyan-100"
-        />
-
-        <button
-          onClick={handleUploadZip}
-          disabled={!selectedZipFile}
-          className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Upload ZIP
-        </button>
       </div>
     </div>
   );
-}
+};
+
+export default AdminDash;

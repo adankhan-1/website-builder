@@ -53,6 +53,19 @@ export const checkSession = (req, res, next) => {
 };
 
 export const logout = (req, res) => {
-    req.session.destroy();
+  req.session.destroy(err => {
+    if (err) {
+      console.error('Session destruction error:', err);
+      return res.status(500).send('Logout failed');
+    }
+
+    res.clearCookie('connect.sid', {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+
     res.sendStatus(200);
+  });
 };

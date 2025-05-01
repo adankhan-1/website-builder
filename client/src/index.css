@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+.bg-image {
+  background-image: url('https://res.cloudinary.com/adankhan/image/upload/v1745322032/uploads/w1pm6orlhvyqssxwn0c3.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
 * {
   margin: 0;
   padding: 0;

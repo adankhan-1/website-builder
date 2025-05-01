@@ -33,26 +33,17 @@ export const insertProject = async (req, res) => {
         let newContent = file.content;
       
         if (file.path.endsWith('.html') || file.path.endsWith('.css') || file.path.endsWith('.scss')) {
-          // Clean up existing preview URLs if re-saving
-          // newContent = newContent.replace(/http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\//g, '');
-      
-          // newContent = newContent.replace(/(src|href)=["'](?!https?:\/\/)([^"']+)["']/g, (match, attr, pathValue) => {
-          //   const normalizedPath = pathModule.posix.normalize(pathValue);
-          //   return `${attr}="http://localhost:3000/live-preview/project/${project.id}/assets/${normalizedPath}"`;
-          // });
-          
-          // newContent = newContent.replace(/url\(["']?(?!https?:\/\/)([^"')]+)["']?\)/g, (match, pathValue) => {
-          //   const normalizedPath = pathModule.posix.normalize(pathValue);
-          //   return `url("http://localhost:3000/live-preview/project/${project.id}/assets/${normalizedPath}")`;
-          // });
-  
           newContent = newContent.replace(
-            /http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\/([^"')\s]+)/g,
+            /http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\/([^"')\s]*)/g,
             (match, remainingPath) => {
+              // If it's just "#", or ends with "#", move it outside the 'assets' path
+              if (remainingPath === '#' || remainingPath.endsWith('#')) {
+                return `http://localhost:3000/live-preview/project/${project.id}/${remainingPath}`;
+              }
               return `http://localhost:3000/live-preview/project/${project.id}/assets/${remainingPath}`;
             }
           );
-        }
+        }        
       
         return {
           ...file,
@@ -107,4 +98,24 @@ export const getProjectsByUserId = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+export const deleteProject = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.body.userId;
+
+  try {
+    const project = await Project.findOne({
+      where: { id, userId },
+    });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    await project.destroy();
+    res.status(200).json({ message: 'Project deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting project:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
   

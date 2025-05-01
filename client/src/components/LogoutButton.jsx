@@ -11,6 +11,9 @@ const LogoutButton = () => {
       });
 
       localStorage.removeItem("userId");
+      localStorage.removeItem("email");
+      localStorage.removeItem("name");
+      localStorage.removeItem("role");
 
       navigate("/login");
     } catch (err) {
@@ -21,7 +24,7 @@ const LogoutButton = () => {
   return (
     <button
       onClick={handleLogout}
-      className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+      className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full"
     >
       Logout
     </button>

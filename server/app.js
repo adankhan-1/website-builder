@@ -57,16 +57,41 @@ app.get('/live-preview/:id', async (req, res) => {
     let htmlWithFixedPaths = indexHtml;
 
     // Fix paths in src="..." and href="..."
-    htmlWithFixedPaths = htmlWithFixedPaths.replace(/(src|href)=["'](?!https?:\/\/)([^"']+)["']/g, (match, attr, path) => {
-      const fixedPath = `http://localhost:3000/live-preview/${id}/assets/${path}`;
-      return `${attr}="${fixedPath}"`;
-    });
+    htmlWithFixedPaths = htmlWithFixedPaths.replace(
+      /(src|href)=["'](?!https?:\/\/)([^"']+)["']/g,
+      (match, attr, path) => {
+        // Skip if the path is exactly "#" or ends with "#"
+        if (path === '#' || path.endsWith('#')) {
+          return match;
+        }
+        const fixedPath = `http://localhost:3000/live-preview/${id}/assets/${path}`;
+        return `${attr}="${fixedPath}"`;
+      }
+    );
 
     // Fix CSS url(...) paths
     htmlWithFixedPaths = htmlWithFixedPaths.replace(/url\(["']?(?!https?:\/\/)([^"')]+)["']?\)/g, (match, path) => {
       const fixedPath = `http://localhost:3000/live-preview/${id}/assets/${path}`;
       return `url("${fixedPath}")`;
     });
+
+    // Inject a script to disable anchor tags with href="#" to prevent navigation issues
+    const preventAnchorReloadScript = `
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('a[href="#"]').forEach(link => {
+              link.addEventListener('click', e => e.preventDefault());
+            });
+          });
+        </script>
+      `;
+
+    // Inject the script before </body> or at end if </body> not present
+    if (htmlWithFixedPaths.includes('</body>')) {
+      htmlWithFixedPaths = htmlWithFixedPaths.replace('</body>', `${preventAnchorReloadScript}</body>`);
+    } else {
+      htmlWithFixedPaths += preventAnchorReloadScript;
+    }
 
     res.send(htmlWithFixedPaths);
   } catch (err) {

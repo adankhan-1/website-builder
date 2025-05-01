@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-// import EditTemplate from './pages/EditTemplate';
 import Templates from './pages/Templates';
 import Projects from './pages/Projects';
 import './App.css';
@@ -12,6 +11,10 @@ import CreateProject from './pages/CreateProject';
 import AdminDashboard from './pages/AdminDashboard';
 import EditFiles from './pages/EditFiles';
 import LandingPage from './pages/LandingPage';
+import AdminUserManagement from './pages/AdminUserManagement';
+import AdminTemplateManagement from './pages/AdminTemplateManagement';
+import Unauthorized from './components/Unauthorized';
+import AdminRoute from './routes/AdminRoute';
 
 export default function App() {
   return (
@@ -72,7 +75,9 @@ export default function App() {
           path="/admin-dashboard"
           element={
             <PrivateRoute>
-              <AdminDashboard />
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
             </PrivateRoute>
           }
         />
@@ -82,6 +87,32 @@ export default function App() {
             <PrivateRoute>
               <EditFiles />
             </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/user-management"
+          element={
+            <PrivateRoute>
+              <AdminRoute>
+                <AdminUserManagement />
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/template-management"
+          element={
+            <PrivateRoute>
+              <AdminRoute>
+                <AdminTemplateManagement />
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/unauthorized"
+          element={
+              <Unauthorized />
           }
         />
       </Routes>

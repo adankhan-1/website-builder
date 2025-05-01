@@ -1,11 +1,12 @@
 import express from 'express';
-import { insertProject, getProject, getProjectsByUserId } from '../controllers/project.js';
+import { insertProject, getProject, getProjectsByUserId, deleteProject } from '../controllers/project.js';
 
 const router = express.Router();
 
 router.post('/', insertProject);
 router.get('/:id', getProject);
 router.get('/user/:userId', getProjectsByUserId);
+router.delete('/:id', deleteProject);
 
 // router.put('/:id', async (req, res) => {
 //   const { id } = req.params;

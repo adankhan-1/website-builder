@@ -82,7 +82,7 @@ const EditFiles = () => {
 
       <div className="flex gap-6">
         {/* Sidebar: File list */}
-        <div className="w-1/4 border-r pr-4">
+        <div className="w-1/4 border-r pr-4 max-h-screen overflow-y-auto">
           <h3 className="text-lg font-semibold mb-2">Files</h3>
           <ul className="space-y-1">
             {files.map((file, idx) => (

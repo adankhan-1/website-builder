@@ -195,7 +195,7 @@ const EditProject = () => {
 
       const data = await res.json();
       if (res.ok) {
-        alert("Project saved successfully!");
+        alert("Your changes have been saved successfully!");
 
         const updatedProject = data.project;
         if (updatedProject?.content) {
@@ -215,7 +215,7 @@ const EditProject = () => {
   const navigate = useNavigate();
 
   const handleExit = () => {
-    navigate('/projects');
+    navigate('/dashboard');
   };
 
   const handleEditFiles = () => {
@@ -225,8 +225,8 @@ const EditProject = () => {
   const htmlPages = templateContent.filter(file => file.path.endsWith('.html'));
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Project Editor</h2>
+    <div className="p-6 bg-image min-h-screen">
+      <h2 className="text-2xl font-bold mb-4 text-cyan-400">Project Editor</h2>
   
       {/* Top toolbar */}
       <div className="flex justify-between items-center mb-4">
