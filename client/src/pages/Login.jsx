@@ -34,7 +34,7 @@ export default function Login() {
   
       if (role === 'admin') {
         console.log("Admin login detected");
-        navigate('/admin-dashboard');
+        navigate('/admin/dashboard');
       } else {
         navigate('/dashboard');
       }

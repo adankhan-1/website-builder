@@ -78,7 +78,7 @@ export const getTemplateById = async (req, res) => {
 };
 
 export const insertTemplate = async (req, res) => {
-    const { name, content } = req.body;
+    const { name, content, thumbnail } = req.body;
 
     if(!name || !content) {
         return res.status(400).json({ message: "Name and content of template are required" });
@@ -88,6 +88,7 @@ export const insertTemplate = async (req, res) => {
         const newTemplate = await Template.create({
             name,
             content,
+            thumbnail,
         });
         return res.status(201).json({ template: newTemplate });
     
@@ -96,3 +97,60 @@ export const insertTemplate = async (req, res) => {
         return res.status(500).json({ message: "Failed to create template due to server error" });
       }
 }
+
+export const deleteTemplate = async (req, res) => {
+    const { id } = req.params;
+
+    if(!id) {
+        return res.status(400).json({ message: "Template ID is required" });
+    }
+
+    try {
+        const deletedTemplate = await Template.destroy({
+            where: { id }
+        });
+
+        if (!deletedTemplate) {
+            return res.status(404).json({ message: "Template not found" });
+        }
+
+        return res.status(200).json({ message: "Template deleted successfully" });
+    
+      } catch (err) {
+        console.error("Error deleting template:", err);
+        return res.status(500).json({ message: "Failed to delete template due to server error" });
+      }
+}
+
+export const updateTemplate = async (req, res) => {
+  const { id } = req.params;
+  const { name, content, thumbnail } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ message: "Template ID is required" });
+  }
+
+  const updateData = {};
+  if (name !== undefined) updateData.name = name;
+  if (content !== undefined) updateData.content = content;
+  if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ message: "No update data provided" });
+  }
+
+  try {
+    const [updatedRowsCount] = await Template.update(updateData, {
+      where: { id }
+    });
+
+    if (updatedRowsCount === 0) {
+      return res.status(404).json({ message: "Template not found or nothing changed" });
+    }
+
+    return res.status(200).json({ message: "Template updated successfully" });
+  } catch (err) {
+    console.error("Error updating template:", err);
+    return res.status(500).json({ message: "Failed to update template due to server error" });
+  }
+};

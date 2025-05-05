@@ -116,20 +116,6 @@ app.get('/live-preview/project/:id', async (req, res) => {
     const indexHtml = fileMap['index.html'];
     if (!indexHtml) return res.status(404).send('index.html not found project');
 
-    // let htmlWithFixedPaths = indexHtml;
-
-    // // Fix paths in src="..." and href="..."
-    // htmlWithFixedPaths = htmlWithFixedPaths.replace(/(src|href)=["'](?!https?:\/\/)([^"']+)["']/g, (match, attr, path) => {
-    //   const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
-    //   return `${attr}="${fixedPath}"`;
-    // });
-
-    // // Fix CSS url(...) paths
-    // htmlWithFixedPaths = htmlWithFixedPaths.replace(/url\(["']?(?!https?:\/\/)([^"')]+)["']?\)/g, (match, path) => {
-    //   const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
-    //   return `url("${fixedPath}")`;
-    // });
-
     res.send(indexHtml);
   } catch (err) {
     console.error("Live preview error:", err);
@@ -138,8 +124,8 @@ app.get('/live-preview/project/:id', async (req, res) => {
 });
 
 app.get(/^\/live-preview\/project\/([^\/]+)\/assets\/(.*)/, async (req, res) => {
-  const id = req.params[0];         // captures :id
-  const encodedPath = req.params[1]; // captures :encodedPath
+  const id = req.params[0];
+  const encodedPath = req.params[1];
   const filePath = decodeURIComponent(encodedPath);
 
   try {
@@ -153,29 +139,17 @@ app.get(/^\/live-preview\/project\/([^\/]+)\/assets\/(.*)/, async (req, res) => 
     if (!file) return res.status(404).send('File not found');
 
     // Handle image (base64) or text
-    const binaryExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.woff', '.woff2', '.ttf', '.eot', '.otf'];
-    const extension = path.extname(filePath).toLowerCase();
-    
-    if (binaryExtensions.includes(extension)) {
-      const mimeTypes = {
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.png': 'image/png',
-        '.gif': 'image/gif',
-        '.svg': 'image/svg+xml',
-        '.webp': 'image/webp',
-        '.woff': 'font/woff',
-        '.woff2': 'font/woff2',
-        '.ttf': 'font/ttf',
-        '.eot': 'application/vnd.ms-fontobject',
-        '.otf': 'font/otf',
-      };
-      const mimeType = mimeTypes[extension] || 'application/octet-stream';
-      const buffer = Buffer.from(file.content, 'base64');
+    const isBase64 = file.content.startsWith('data:') && file.content.includes(';base64,');
+
+    if (isBase64) {
+      const [meta, base64Data] = file.content.split(';base64,');
+      const mimeType = meta.replace('data:', '');
+      const buffer = Buffer.from(base64Data, 'base64');
       res.setHeader('Content-Type', mimeType);
       return res.send(buffer);
     } else {
       // Assume text-based file
+      const ext = path.extname(filePath).toLowerCase();
       const textTypes = {
         '.css': 'text/css',
         '.js': 'application/javascript',
@@ -184,7 +158,7 @@ app.get(/^\/live-preview\/project\/([^\/]+)\/assets\/(.*)/, async (req, res) => 
         '.map': 'application/json',
         '.scss': 'text/x-scss'
       };
-      const contentType = textTypes[extension] || 'text/plain';
+      const contentType = textTypes[ext] || 'text/plain';
       res.setHeader('Content-Type', contentType);
       return res.send(file.content);
     }
@@ -196,43 +170,28 @@ app.get(/^\/live-preview\/project\/([^\/]+)\/assets\/(.*)/, async (req, res) => 
 });
 
 app.get(/^\/live-preview\/([^\/]+)\/assets\/(.*)/, async (req, res) => {
-  const id = req.params[0];         // captures :id
-  const encodedPath = req.params[1]; // captures :encodedPath
+  const id = req.params[0];
+  const encodedPath = req.params[1];
   const filePath = decodeURIComponent(encodedPath);
 
   try {
     const result = await Template.findOne({ where: { id } });
     if (!result) return res.status(404).send('Template not found');
 
-    const templateContent = result.content;
-    const file = templateContent.find(f => f.path === filePath);
-
+    const file = result.content.find(f => f.path === filePath);
     if (!file) return res.status(404).send('File not found');
 
-    // Handle image (base64) or text
-    const binaryExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.woff', '.woff2', '.ttf', '.eot', '.otf'];
-    const extension = path.extname(filePath).toLowerCase();
+    const isBase64 = file.content.startsWith('data:') && file.content.includes(';base64,');
 
-    if (binaryExtensions.includes(extension)) {
-      const mimeTypes = {
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.png': 'image/png',
-        '.gif': 'image/gif',
-        '.svg': 'image/svg+xml',
-        '.webp': 'image/webp',
-        '.woff': 'font/woff',
-        '.woff2': 'font/woff2',
-        '.ttf': 'font/ttf',
-        '.eot': 'application/vnd.ms-fontobject',
-        '.otf': 'font/otf',
-      };
-      const mimeType = mimeTypes[extension] || 'application/octet-stream';
-      const buffer = Buffer.from(file.content, 'base64');
+    if (isBase64) {
+      const [meta, base64Data] = file.content.split(';base64,');
+      const mimeType = meta.replace('data:', '');
+      const buffer = Buffer.from(base64Data, 'base64');
       res.setHeader('Content-Type', mimeType);
       return res.send(buffer);
     } else {
-      // Assume text-based file
+      // fallback to extension-based text type (optional)
+      const ext = path.extname(filePath).toLowerCase();
       const textTypes = {
         '.css': 'text/css',
         '.js': 'application/javascript',
@@ -241,7 +200,7 @@ app.get(/^\/live-preview\/([^\/]+)\/assets\/(.*)/, async (req, res) => {
         '.map': 'application/json',
         '.scss': 'text/x-scss'
       };
-      const contentType = textTypes[extension] || 'text/plain';
+      const contentType = textTypes[ext] || 'text/plain';
       res.setHeader('Content-Type', contentType);
       return res.send(file.content);
     }
@@ -273,7 +232,7 @@ app.get('/edit-template/:id/data', async (req, res) => {
 
     // Optional: build assets array
     const assets = templateContent
-      .filter(file => /^images\//.test(file.path)) // only images for now
+      .filter(file => /^images\//.test(file.path))
       .map(file => ({
         name: path.basename(file.path),
         url: `/live-preview/${id}/assets/${file.path}`

@@ -1,12 +1,14 @@
 import express from 'express';
-import { insertProject, getProject, getProjectsByUserId, deleteProject } from '../controllers/project.js';
+import { insertProject, getProject, getProjectsByUserId, deleteProject, exportProjectAsZip } from '../controllers/project.js';
+import checkAuth from '../middlewares/checkAuth.js';
 
 const router = express.Router();
 
 router.post('/', insertProject);
 router.get('/:id', getProject);
-router.get('/user/:userId', getProjectsByUserId);
+router.get('/user/:userId', checkAuth, getProjectsByUserId);
 router.delete('/:id', deleteProject);
+router.get('/export/:id', exportProjectAsZip);
 
 // router.put('/:id', async (req, res) => {
 //   const { id } = req.params;

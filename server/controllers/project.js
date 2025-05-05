@@ -1,4 +1,8 @@
 import Project from '../models/project.js';
+import archiver from 'archiver';
+import { PassThrough } from 'stream';
+import { Buffer } from 'buffer';
+// import { Readable } from 'stream';
 
 export const insertProject = async (req, res) => {
   try {
@@ -88,8 +92,9 @@ export const getProjectsByUserId = async (req, res) => {
   try {
     const projects = await Project.findAll({
       where: { userId },
-      select: ['id', 'name', 'createdAt', 'updatedAt'],
+      attributes: ['id', 'name', 'createdAt', 'updatedAt'],
       order: [['updatedAt', 'DESC']],
+      raw: true,
     });
 
     res.status(200).json({ projects });
@@ -118,4 +123,78 @@ export const deleteProject = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+
+export const exportProjectAsZip = async (req, res) => {
+  console.log('Exporting project as ZIP:', req.params.id);
+  try {
+    const projectId = req.params.id;
+
+    // Fetch the project from the database
+    const project = await Project.findByPk(projectId);
+
+    // Check if the project or project content exists
+    if (!project || !project.content) {
+      return res.status(404).json({ error: 'Project not found or has no content' });
+    }
+
+    const zipName = `${project.name || 'project'}.zip`;
+
+    // Create a zip archive using Archiver
+    const archive = archiver('zip', {
+      zlib: { level: 9 },
+    });
+
+    // Set response headers for file download
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
+
+    // Catch archiver errors
+    archive.on('error', (err) => {
+      console.error('Archiver error:', err);
+      res.status(500).send('Error creating zip');
+    });
+
+    // Pipe the archive to the response
+    archive.pipe(res);
+
+    // Loop through each file in the project's content array
+    for (const file of project.content) {
+      if (!file.path || !file.content) continue; // Skip if file has no path or content
+
+      console.log('Processing file:', file.path, 'Type:', file.content.startsWith('data:') ? 'Base64' : 'Text');
+
+
+      // Handle base64-encoded files (e.g., images, fonts, etc.)
+      if (file.content.startsWith('data:')) {
+        const base64Match = file.content.match(/^data:(.+);base64,(.+)$/);
+        if (base64Match) {
+          const mimeType = base64Match[1]; // MIME type of the file
+          const base64Data = base64Match[2]; // The actual base64-encoded data
+          const buffer = Buffer.from(base64Data, 'base64'); // Convert base64 to buffer
+          
+          // Append the buffer as a binary file in the ZIP
+          archive.append(buffer, { name: file.path });
+        } else {
+          console.warn('Invalid base64 format for file:', file.path);
+        }
+      } else {
+        // Handle plain text files (HTML, JS, CSS)
+        // Ensure the content is safely appended as raw text
+        archive.append(file.content, { name: file.path });
+      }
+    }
+
+    // Finalize the archive to complete the process
+    await new Promise((resolve, reject) => {
+      archive.on('finish', resolve);
+      archive.on('error', reject);
+      archive.finalize();
+    });
+
+  } catch (err) {
+    console.error('Error exporting project:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
   

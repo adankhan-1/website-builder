@@ -23,7 +23,9 @@ const CreateProject = () => {
     
     try {
       const res = await fetch(
-        `http://localhost:3000/api/template/${templateId}`
+        `http://localhost:3000/api/template/${templateId}`, {
+          credentials: 'include',
+        }
       );
       const data = await res.json();
 
@@ -40,6 +42,7 @@ const CreateProject = () => {
       const res = await fetch('http://localhost:3000/api/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           name: projectName,
           userId,

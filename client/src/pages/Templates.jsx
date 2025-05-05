@@ -9,6 +9,7 @@ const TemplatesPage = () => {
     const fetchTemplates = async () => {
       try {
         const response = await fetchAllTemplates();
+        console.log("Fetched templates:", response.data.templates);
         setTemplates(response.data.templates || []);
       } catch (error) {
         console.error('Error fetching templates:', error);
@@ -35,7 +36,7 @@ const TemplatesPage = () => {
       <Navbar />
       <div className="p-6 bg-image bg-cover bg-center min-h-screen">
         <h2 className="text-3xl font-semibold mb-6 text-gray-800">
-          Choose a template and start building !
+          Choose a template and start building your website !
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -46,7 +47,7 @@ const TemplatesPage = () => {
             >
               <div className="overflow-hidden">
                 <img
-                  src={template.thumbnailUrl}
+                  src={`data:image/png;base64,${template.thumbnail}`}
                   alt={template.name}
                   className="w-full h-60 object-cover transform transition-transform duration-300 hover:scale-105"
                 />
@@ -66,7 +67,7 @@ const TemplatesPage = () => {
                     className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition duration-200"
                     onClick={() => handleEditTemplate(template.id)}
                   >
-                    Edit Template
+                    Select Template
                   </button>
                 </div>
               </div>

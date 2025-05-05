@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, Pencil } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
+import { saveAs } from 'file-saver';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [showExport, setShowExport] = useState(false);
+
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -19,10 +22,12 @@ const Projects = () => {
 
       try {
         const res = await fetch(
-          `http://localhost:3000/api/project/user/${userId}`
+          `http://localhost:3000/api/project/user/${userId}`, {
+            credentials: "include",
+          }
         );
         const data = await res.json();
-        setProjects(data.projects || []);
+        setProjects(data.projects);
       } catch (error) {
         console.error("Error fetching projects:", error);
       } finally {
@@ -72,6 +77,16 @@ const Projects = () => {
     }
   };
 
+  const handleExport = async (project) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/project/export/${project.id}`);
+      const blob = await response.blob();
+      saveAs(blob, `${project.name}.zip`);
+    } catch (err) {
+      console.error('Error exporting project:', err);
+    }
+  };
+
   return (
     <div>
       <Navbar />
@@ -94,18 +109,20 @@ const Projects = () => {
             to create one.
           </div>
         ) : (
-          <div className="max-h-[calc(100vh-150px)] overflow-y-auto pr-2 grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="max-h-[calc(100vh-150px)] overflow-y-auto pr-2 grid grid-cols-1 md:grid-cols-4 gap-6 p-6">
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="border rounded-lg shadow-md p-4 flex flex-col justify-between bg-white"
+                className="border rounded-lg shadow-md p-4 flex flex-col justify-between 
+           bg-white/10 backdrop-blur-md text-white border-white/20 
+           transform transition-transform duration-300 hover:scale-105"
               >
                 <div>
                   <h3 className="text-lg font-medium mb-2">{project.name}</h3>
-                  <p className="text-sm text-gray-600 mb-1">
+                  <p className="text-sm mb-1">
                     Created: {new Date(project.createdAt).toLocaleDateString()}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm">
                     Last Modified:{" "}
                     {new Date(project.updatedAt).toLocaleDateString()}
                   </p>
@@ -132,6 +149,12 @@ const Projects = () => {
                     }}
                   >
                     <Trash2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600"
+                    onClick={() => handleExport(project)}
+                  >
+                    Export Zip
                   </button>
                 </div>
               </div>
@@ -166,6 +189,23 @@ const Projects = () => {
                   No
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {showExport && (
+          <div className="modal-backdrop">
+            <div className="modal">
+              <p>Do you want to download the project in a zip file?</p>
+              <button
+                onClick={() => {
+                  handleExport();
+                  setShowExport(false);
+                }}
+              >
+                Yes
+              </button>
+              <button onClick={() => setShowExport(false)}>Cancel</button>
             </div>
           </div>
         )}

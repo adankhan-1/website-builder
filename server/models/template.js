@@ -11,8 +11,8 @@ const Template = sequelize.define('Template', {
     type: DataTypes.STRING(200),
     allowNull: false,
   },
-  thumbnailUrl: {
-    type: DataTypes.STRING(255),
+  thumbnail: {
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   content: {

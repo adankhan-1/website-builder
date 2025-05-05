@@ -12,9 +12,10 @@ import AdminDashboard from './pages/AdminDashboard';
 import EditFiles from './pages/EditFiles';
 import LandingPage from './pages/LandingPage';
 import AdminUserManagement from './pages/AdminUserManagement';
-import AdminTemplateManagement from './pages/AdminTemplateManagement';
+import AdminAddTemplate from './pages/AdminAddTemplate';
 import Unauthorized from './components/Unauthorized';
 import AdminRoute from './routes/AdminRoute';
+import AdminViewTemplates from './pages/AdminViewTemplates';
 
 export default function App() {
   return (
@@ -72,7 +73,7 @@ export default function App() {
           } 
         />
         <Route
-          path="/admin-dashboard"
+          path="/admin/dashboard"
           element={
             <PrivateRoute>
               <AdminRoute>
@@ -100,11 +101,11 @@ export default function App() {
           }
         />
         <Route
-          path="/admin/template-management"
+          path="/admin/add-template"
           element={
             <PrivateRoute>
               <AdminRoute>
-                <AdminTemplateManagement />
+                <AdminAddTemplate />
               </AdminRoute>
             </PrivateRoute>
           }
@@ -113,6 +114,16 @@ export default function App() {
           path="/unauthorized"
           element={
               <Unauthorized />
+          }
+        />
+        <Route
+          path="/admin/view-templates"
+          element={
+            <PrivateRoute>
+              <AdminRoute>
+                <AdminViewTemplates />
+              </AdminRoute>
+            </PrivateRoute>
           }
         />
       </Routes>
