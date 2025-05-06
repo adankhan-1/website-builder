@@ -22,8 +22,6 @@ export const insertProject = async (req, res) => {
       await project.update({
         content,
       });
-
-      // return res.status(200).json({ message: 'Project updated successfully', project: existingProject });
     } else {
       project = await Project.create({
         userId,

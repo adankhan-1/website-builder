@@ -251,7 +251,6 @@ app.get(/^\/live-preview\/([^\/]+)\/assets\/(.*)/, async (req, res) => {
 
 app.get('/edit-template/:id/data', async (req, res) => {
   const { id } = req.params;
-  console.log("Fetching template data for edit:", id);
   try {
     const result = await Template.findOne({ where: { id } });
     if (!result) return res.status(404).send('Template not found');
