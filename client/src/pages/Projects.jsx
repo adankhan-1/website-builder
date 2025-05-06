@@ -154,7 +154,7 @@ const Projects = () => {
                     className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600"
                     onClick={() => handleExport(project)}
                   >
-                    Export Zip
+                    Export
                   </button>
                 </div>
               </div>

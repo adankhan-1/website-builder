@@ -15,7 +15,6 @@ const EditFiles = () => {
         try {
           const response = await fetch(`http://localhost:3000/api/project/${projectId}`);
           const data = await response.json();
-          console.log('Fetched project:', data);
           setFiles(data.project.content || []);
         } catch (err) {
           console.error('Error fetching files:', err);

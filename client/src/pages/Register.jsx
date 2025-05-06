@@ -21,7 +21,6 @@ export default function Register() {
       
         try {
           const response = await register(formData);
-          console.log("Signup successful:", response.data);
           navigate('/login');
         } catch (err) {
           console.error("Signup failed:", err.response?.data?.message || err.message);

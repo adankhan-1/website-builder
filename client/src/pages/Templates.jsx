@@ -9,7 +9,6 @@ const TemplatesPage = () => {
     const fetchTemplates = async () => {
       try {
         const response = await fetchAllTemplates();
-        console.log("Fetched templates:", response.data.templates);
         setTemplates(response.data.templates || []);
       } catch (error) {
         console.error('Error fetching templates:', error);
@@ -21,7 +20,6 @@ const TemplatesPage = () => {
 
   // Live Preview handler
   const handleLivePreview = (templateId) => {
-    console.log("Clicked Live Preview:", templateId);
     const previewUrl = `http://localhost:3000/live-preview/${templateId}`;
     window.open(previewUrl, '_blank');
   };
@@ -38,45 +36,49 @@ const TemplatesPage = () => {
         <h2 className="text-3xl font-semibold mb-6 text-gray-800">
           Choose a template and start building your website !
         </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {templates.map((template) => (
-            <div
-              key={template.id}
-              className="rounded-xl overflow-hidden shadow-lg bg-white border hover:border-cyan-400 transition duration-300"
-            >
-              <div className="overflow-hidden">
-                <img
-                  src={`data:image/png;base64,${template.thumbnail}`}
-                  alt={template.name}
-                  className="w-full h-60 object-cover transform transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-xl font-semibold text-gray-800">
-                  {template.name}
-                </h3>
-                <div className="mt-3 flex space-x-2">
-                  <button
-                    className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition duration-200"
-                    onClick={() => handleLivePreview(template.id)}
-                  >
-                    Live Preview
-                  </button>
-                  <button
-                    className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition duration-200"
-                    onClick={() => handleEditTemplate(template.id)}
-                  >
-                    Select Template
-                  </button>
+  
+        <div className="max-h-[80vh] overflow-y-auto p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {templates.map((template) => (
+              <div
+                key={template.id}
+                className="border rounded-lg shadow-md p-4 flex flex-col justify-between 
+                bg-white/10 backdrop-blur-md text-white border-white/20 
+                transform transition-transform duration-300 hover:scale-105"
+              >
+                <div className="overflow-hidden">
+                  <img
+                    src={`data:image/png;base64,${template.thumbnail}`}
+                    alt={template.name}
+                    className="w-full h-60 object-cover transform transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+                <div className="p-4">
+                  <h3 className="text-xl font-semibold text-gray-800">
+                    {template.name}
+                  </h3>
+                  <div className="mt-3 flex space-x-2">
+                    <button
+                      className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition duration-200"
+                      onClick={() => handleLivePreview(template.id)}
+                    >
+                      Live Preview
+                    </button>
+                    <button
+                      className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition duration-200"
+                      onClick={() => handleEditTemplate(template.id)}
+                    >
+                      Select Template
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
-  );
+  );  
 };
 
 export default TemplatesPage;

@@ -1,6 +1,5 @@
 import Project from '../models/project.js';
 import archiver from 'archiver';
-import { PassThrough } from 'stream';
 import { Buffer } from 'buffer';
 // import { Readable } from 'stream';
 
@@ -12,82 +11,190 @@ export const insertProject = async (req, res) => {
       return res.status(400).json({ error: 'Incomplete data received' });
     }
 
+    let project;
+
     if(projectId) {
-      const existingProject = await Project.findByPk(projectId);
-      if (!existingProject) {
+      project = await Project.findByPk(projectId);
+      if (!project) {
         return res.status(404).json({ error: 'Project not found' });
       }
 
-      await existingProject.update({
+      await project.update({
         content,
       });
 
-      return res.status(200).json({ message: 'Project updated successfully', project: existingProject });
+      // return res.status(200).json({ message: 'Project updated successfully', project: existingProject });
+    } else {
+      project = await Project.create({
+        userId,
+        templateId,
+        content,
+        name,
+      });
     }
 
-    const project = await Project.create({
-      userId,
-      templateId,
-      content: [],
-      name,
-    });
+    
 
-    if (content) {
-      const fixedContent = content.map(file => {
-        let newContent = file.content;
+    // if (content) {
+    //   const fixedContent = content.map(file => {
+    //     let newContent = file.content;
       
+    //     if (file.path.endsWith('.html') || file.path.endsWith('.css') || file.path.endsWith('.scss')) {
+    //       newContent = newContent.replace(
+    //         /http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\/([^"')\s]*)/g,
+    //         (match, remainingPath) => {
+    //           // If it's just "#", or ends with "#", move it outside the 'assets' path
+    //           if (remainingPath === '#' || remainingPath.endsWith('#')) {
+    //             return `http://localhost:3000/live-preview/project/${project.id}/${remainingPath}`;
+    //           }
+    //           return `http://localhost:3000/live-preview/project/${project.id}/assets/${remainingPath}`;
+    //         }
+    //       );
+    //     }        
+      
+    //     return {
+    //       ...file,
+    //       content: newContent,
+    //     };
+    //   });
+      
+    //   await project.update({ content: fixedContent });
+    // }
+
+    // res.status(201).json({ message: 'Project saved successfully', project });
+
+    let fixedContent = project.content;
+
+    if (Array.isArray(fixedContent)) {
+      fixedContent = fixedContent.map(file => {
+        let newContent = file.content;
+
+        // Apply only to .html, .css, and .scss files
         if (file.path.endsWith('.html') || file.path.endsWith('.css') || file.path.endsWith('.scss')) {
+
+          // Fix src and href in HTML
           newContent = newContent.replace(
-            /http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\/([^"')\s]*)/g,
-            (match, remainingPath) => {
-              // If it's just "#", or ends with "#", move it outside the 'assets' path
-              if (remainingPath === '#' || remainingPath.endsWith('#')) {
-                return `http://localhost:3000/live-preview/project/${project.id}/${remainingPath}`;
+            /(src|href)=["'](?!https?:\/\/)([^"']+)["']/g,
+            (match, attr, path) => {
+              if (path === '#' || path.endsWith('#')) {
+                return match; // skip
               }
-              return `http://localhost:3000/live-preview/project/${project.id}/assets/${remainingPath}`;
+              const fixedPath = `http://localhost:3000/live-preview/project/${project.id}/assets/${path}`;
+              return `${attr}="${fixedPath}"`;
             }
           );
-        }        
-      
+
+          // Fix url(...) in CSS
+          newContent = newContent.replace(
+            /url\(["']?(?!https?:\/\/)([^"')]+)["']?\)/g,
+            (match, path) => {
+              const fixedPath = `http://localhost:3000/live-preview/project/${project.id}/assets/${path}`;
+              return `url("${fixedPath}")`;
+            }
+          );
+        }
+
         return {
           ...file,
           content: newContent,
         };
       });
-      
-      await project.update({ content: fixedContent });
     }
 
-    res.status(201).json({ message: 'Project saved successfully', project });
+    res.status(201).json({
+      project: {
+        ...project.toJSON(),
+        content: fixedContent,
+      },
+    });
   } catch (err) {
     console.error('Save project error:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
+// export const getProject = async (req, res) => {
+//     try {
+//       const id = req.params.id;
+  
+//       const project = await Project.findOne({
+//         where: { id },
+//       });
+  
+//       if (!project) {
+//         return res.status(404).json({ error: 'Project not found' });
+//       }
+  
+//       res.status(200).json({ project });
+//     }
+//     catch (err) {
+//       console.error('Error fetching project:', err);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//     }
+//   };
+
 export const getProject = async (req, res) => {
-    try {
-      const id = req.params.id;
-  
-      const project = await Project.findOne({
-        where: { id },
+  try {
+    const id = req.params.id;
+
+    const project = await Project.findOne({ where: { id } });
+
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    let fixedContent = project.content;
+
+    if (Array.isArray(fixedContent)) {
+      fixedContent = fixedContent.map(file => {
+        let newContent = file.content;
+
+        // Apply only to .html, .css, and .scss files
+        if (file.path.endsWith('.html') || file.path.endsWith('.css') || file.path.endsWith('.scss')) {
+
+          // Fix src and href in HTML
+          newContent = newContent.replace(
+            /(src|href)=["'](?!https?:\/\/)([^"']+)["']/g,
+            (match, attr, path) => {
+              if (path === '#' || path.endsWith('#')) {
+                return match; // skip
+              }
+              const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
+              return `${attr}="${fixedPath}"`;
+            }
+          );
+
+          // Fix url(...) in CSS
+          newContent = newContent.replace(
+            /url\(["']?(?!https?:\/\/)([^"')]+)["']?\)/g,
+            (match, path) => {
+              const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
+              return `url("${fixedPath}")`;
+            }
+          );
+        }
+
+        return {
+          ...file,
+          content: newContent,
+        };
       });
-  
-      if (!project) {
-        return res.status(404).json({ error: 'Project not found' });
-      }
-  
-      res.status(200).json({ project });
     }
-    catch (err) {
-      console.error('Error fetching project:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  };
+
+    res.status(200).json({
+      project: {
+        ...project.toJSON(),
+        content: fixedContent,
+      },
+    });
+  } catch (err) {
+    console.error('Error fetching project:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
   
 export const getProjectsByUserId = async (req, res) => {
   const userId = req.params.userId;
-  console.log('Fetching projects for userId:', userId);
 
   try {
     const projects = await Project.findAll({
@@ -125,7 +232,6 @@ export const deleteProject = async (req, res) => {
 }
 
 export const exportProjectAsZip = async (req, res) => {
-  console.log('Exporting project as ZIP:', req.params.id);
   try {
     const projectId = req.params.id;
 
@@ -160,9 +266,6 @@ export const exportProjectAsZip = async (req, res) => {
     // Loop through each file in the project's content array
     for (const file of project.content) {
       if (!file.path || !file.content) continue; // Skip if file has no path or content
-
-      console.log('Processing file:', file.path, 'Type:', file.content.startsWith('data:') ? 'Base64' : 'Text');
-
 
       // Handle base64-encoded files (e.g., images, fonts, etc.)
       if (file.content.startsWith('data:')) {

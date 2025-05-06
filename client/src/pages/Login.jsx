@@ -33,7 +33,6 @@ export default function Login() {
       localStorage.setItem('role', role);
   
       if (role === 'admin') {
-        console.log("Admin login detected");
         navigate('/admin/dashboard');
       } else {
         navigate('/dashboard');

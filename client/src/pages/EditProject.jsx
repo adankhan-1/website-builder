@@ -118,25 +118,119 @@ const EditProject = () => {
     loadPageContent(selectedPage, templateContent);
   };
 
+  // const handleSave = async () => {
+  //   const iframe = iframeRef.current;
+  //   if (!iframe || !iframe.contentDocument) return;
+
+  //   const doc = iframe.contentDocument;
+  //   const bodyElement = doc.body;
+
+  //   // Remove all edit icons
+  //   doc.querySelectorAll(".edit-icon").forEach((icon) => icon.remove());
+
+  //   // Unwrap images from .img-wrapper
+  //   doc.querySelectorAll(".img-wrapper").forEach((wrapper) => {
+  //     const img = wrapper.querySelector("img");
+  //     if (img) wrapper.parentNode.replaceChild(img, wrapper);
+  //   });
+
+  //   // Remove contenteditable
+  //   bodyElement.removeAttribute("contenteditable");
+
+  //   // Remove injected scripts and styles
+  //   doc.querySelectorAll("script, style").forEach((tag) => {
+  //     if (
+  //       tag.textContent.includes("wrapImageWithEditor") ||
+  //       tag.textContent.includes(".edit-icon")
+  //     ) {
+  //       tag.remove();
+  //     }
+  //   });
+
+  //   const editedBodyContent = bodyElement.innerHTML;
+  //   const bodyAttributes = Array.from(bodyElement.attributes)
+  //     .map((attr) => `${attr.name}="${attr.value}"`)
+  //     .join(" ");
+
+  //   const selectedFile = templateContent.find(
+  //     (file) => file.path === selectedPage
+  //   );
+  //   if (!selectedFile) return;
+
+  //   const updatedHtml = selectedFile.content.replace(
+  //     /<body[^>]*>[\s\S]*<\/body>/i,
+  //     `<body${
+  //       bodyAttributes ? " " + bodyAttributes : ""
+  //     }>${editedBodyContent}</body>`
+  //   );
+
+  //   const updatedFiles = templateContent.map((file) => {
+  //     if (file.path === selectedPage) {
+  //       return {
+  //         ...file,
+  //         content: updatedHtml,
+  //       };
+  //     }
+  //     return file;
+  //   });
+
+  //   const userId = localStorage.getItem("userId");
+  //   if (!userId) {
+  //     alert("User not logged in. Please log in first.");
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await fetch("http://localhost:3000/api/project", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         userId,
+  //         templateId,
+  //         projectId: currentProjectId,
+  //         name: "My Project",
+  //         content: updatedFiles,
+  //       }),
+  //     });
+
+  //     const data = await res.json();
+  //     if (res.ok) {
+  //       alert("Your changes have been saved successfully!");
+
+  //       const updatedProject = data.project;
+  //       if (updatedProject?.content) {
+  //         setTemplateContent(updatedProject.content);
+  //         loadPageContent(selectedPage, updatedProject.content);
+  //         setCurrentProjectId(updatedProject.id);
+  //       }
+  //     } else {
+  //       alert("Failed to save: " + data.error);
+  //     }
+  //   } catch (err) {
+  //     console.error("Save failed:", err);
+  //     alert("An error occurred while saving the project.");
+  //   }
+  // };
+
   const handleSave = async () => {
     const iframe = iframeRef.current;
     if (!iframe || !iframe.contentDocument) return;
-
+  
     const doc = iframe.contentDocument;
     const bodyElement = doc.body;
-
+  
     // Remove all edit icons
     doc.querySelectorAll(".edit-icon").forEach((icon) => icon.remove());
-
+  
     // Unwrap images from .img-wrapper
     doc.querySelectorAll(".img-wrapper").forEach((wrapper) => {
       const img = wrapper.querySelector("img");
       if (img) wrapper.parentNode.replaceChild(img, wrapper);
     });
-
+  
     // Remove contenteditable
     bodyElement.removeAttribute("contenteditable");
-
+  
     // Remove injected scripts and styles
     doc.querySelectorAll("script, style").forEach((tag) => {
       if (
@@ -146,40 +240,56 @@ const EditProject = () => {
         tag.remove();
       }
     });
-
+  
     const editedBodyContent = bodyElement.innerHTML;
     const bodyAttributes = Array.from(bodyElement.attributes)
       .map((attr) => `${attr.name}="${attr.value}"`)
       .join(" ");
-
+  
     const selectedFile = templateContent.find(
       (file) => file.path === selectedPage
     );
     if (!selectedFile) return;
-
+  
     const updatedHtml = selectedFile.content.replace(
       /<body[^>]*>[\s\S]*<\/body>/i,
-      `<body${
-        bodyAttributes ? " " + bodyAttributes : ""
-      }>${editedBodyContent}</body>`
+      `<body${bodyAttributes ? " " + bodyAttributes : ""}>${editedBodyContent}</body>`
     );
-
+  
+    const projectAssetBase = `http://localhost:3000/live-preview/project/${currentProjectId}/assets/`;
+  
+    // Function to reverse fixed paths to relative
+    const revertPaths = (content) => {
+      return content
+        .replace(
+          new RegExp(`${projectAssetBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g'),
+          ''
+        )
+    };
+  
     const updatedFiles = templateContent.map((file) => {
+      let content = file.content;
+  
       if (file.path === selectedPage) {
-        return {
-          ...file,
-          content: updatedHtml,
-        };
+        content = updatedHtml;
       }
-      return file;
+  
+      if (file.path.endsWith('.html') || file.path.endsWith('.css') || file.path.endsWith('.scss')) {
+        content = revertPaths(content);
+      }
+  
+      return {
+        ...file,
+        content,
+      };
     });
-
+  
     const userId = localStorage.getItem("userId");
     if (!userId) {
       alert("User not logged in. Please log in first.");
       return;
     }
-
+  
     try {
       const res = await fetch("http://localhost:3000/api/project", {
         method: "POST",
@@ -192,11 +302,11 @@ const EditProject = () => {
           content: updatedFiles,
         }),
       });
-
+  
       const data = await res.json();
       if (res.ok) {
         alert("Your changes have been saved successfully!");
-
+  
         const updatedProject = data.project;
         if (updatedProject?.content) {
           setTemplateContent(updatedProject.content);
@@ -211,6 +321,7 @@ const EditProject = () => {
       alert("An error occurred while saving the project.");
     }
   };
+  
 
   const navigate = useNavigate();
 

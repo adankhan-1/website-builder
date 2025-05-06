@@ -246,7 +246,7 @@ const AdminViewTemplates = () => {
               <div className="mt-4 text-center">
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="text-gray-600 hover:text-gray-800 px-4 py-2 rounded"
+                  className="text-gray-600 hover:bg-slate-200 px-4 py-2 rounded"
                 >
                   Close
                 </button>
@@ -255,12 +255,13 @@ const AdminViewTemplates = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-12">
           {templates.map((template) => (
             <div
               key={template.id}
-              className="rounded-xl overflow-hidden shadow-lg bg-white border hover:border-cyan-400 transition duration-300"
-            >
+              className="border rounded-lg shadow-md p-4 flex flex-col justify-between 
+              bg-white/10 backdrop-blur-md text-white border-white/20 
+              transform transition-transform duration-300 hover:scale-105"            >
               <div className="overflow-hidden">
                 <img
                   src={`data:image/png;base64,${template.thumbnail}`}
@@ -269,7 +270,7 @@ const AdminViewTemplates = () => {
                 />
               </div>
               <div className="p-4">
-                <h3 className="text-xl font-semibold text-gray-800">
+                <h3 className="text-xl font-semibold">
                   {template.name}
                 </h3>
                 <div className="mt-3 flex space-x-2">

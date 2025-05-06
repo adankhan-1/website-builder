@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/', insertProject);
 router.get('/:id', getProject);
-router.get('/user/:userId', checkAuth, getProjectsByUserId);
+router.get('/user/:userId', getProjectsByUserId);
 router.delete('/:id', deleteProject);
 router.get('/export/:id', exportProjectAsZip);
 
