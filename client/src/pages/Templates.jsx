@@ -33,7 +33,7 @@ const TemplatesPage = () => {
     <div>
       <Navbar />
       <div className="p-6 bg-image bg-cover bg-center min-h-screen">
-        <h2 className="text-3xl font-semibold mb-6 text-gray-800">
+        <h2 className="text-3xl font-semibold mb-2 text-gray-800">
           Choose a template and start building your website !
         </h2>
   
@@ -42,7 +42,7 @@ const TemplatesPage = () => {
             {templates.map((template) => (
               <div
                 key={template.id}
-                className="border rounded-lg shadow-md p-4 flex flex-col justify-between 
+                className="border shadow-md p-2 flex flex-col justify-between 
                 bg-white/10 backdrop-blur-md text-white border-white/20 
                 transform transition-transform duration-300 hover:scale-105"
               >
@@ -54,7 +54,7 @@ const TemplatesPage = () => {
                   />
                 </div>
                 <div className="p-4">
-                  <h3 className="text-xl font-semibold text-gray-800">
+                  <h3 className="text-xl font-semibold">
                     {template.name}
                   </h3>
                   <div className="mt-3 flex space-x-2">

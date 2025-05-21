@@ -17,17 +17,17 @@ const AdminViewTemplates = () => {
     const [newThumbnailFile, setNewThumbnailFile] = useState(null);
     const [newZipFile, setNewZipFile] = useState(null);
 
-    useEffect(() => {
-        const fetchTemplates = async () => {
-            try {
-                const response = await fetchAllTemplates();
-                setTemplates(response.data.templates || []);
-            } catch(error) {
-                console.error('Error fetching templates:', error);
-            }
-        }
+    const fetchTemplates = async () => {
+      try {
+        const response = await fetchAllTemplates();
+        setTemplates(response.data.templates || []);
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+      }
+    };
 
-        fetchTemplates();
+    useEffect(() => {
+      fetchTemplates();
     }, []);
 
     const handleLivePreview = (templateId) => {
@@ -84,6 +84,7 @@ const AdminViewTemplates = () => {
         );
         alert("Name updated!");
         setShowEditModal(false);
+        fetchTemplates();
       } catch (error) {
         console.error("Failed to update name:", error);
       }
@@ -106,6 +107,7 @@ const AdminViewTemplates = () => {
           );
           alert("Thumbnail updated!");
           setShowEditModal(false);
+          fetchTemplates();
         } catch (error) {
           console.error("Failed to update thumbnail:", error);
         }
@@ -153,6 +155,7 @@ const AdminViewTemplates = () => {
         alert("Template content updated via ZIP!");
         setNewZipFile(null);
         setShowEditModal(false);
+        fetchTemplates();
       } catch (err) {
         console.error("Failed to upload ZIP:", err);
         alert("Failed to process ZIP file.");
@@ -207,7 +210,7 @@ const AdminViewTemplates = () => {
               />
               <button
                 onClick={handleSaveName}
-                className="mb-4 bg-cyan-600 text-white px-4 py-2 rounded"
+                className="mb-4 bg-cyan-600 text-white px-2 py-2 rounded"
               >
                 Save Name
               </button>
@@ -221,14 +224,14 @@ const AdminViewTemplates = () => {
               />
               <button
                 onClick={handleSaveThumbnail}
-                className="mb-4 bg-cyan-600 text-white px-4 py-2 rounded"
+                className="mb-4 bg-cyan-600 text-white px-2 py-2 rounded"
               >
                 Save Thumbnail
               </button>
 
               {/* ZIP Upload */}
-              <label className="block text-sm font-medium mb-1 mt-4">
-                Upload ZIP to Replace Content
+              <label className="block text-sm font-medium mb-2">
+                Upload ZIP to replace template content
               </label>
               <input
                 type="file"
@@ -238,7 +241,7 @@ const AdminViewTemplates = () => {
               />
               <button
                 onClick={handleZipContentUpload}
-                className="bg-cyan-600 text-white px-4 py-2 rounded"
+                className="bg-cyan-600 text-white px-2 py-2 rounded"
               >
                 Upload ZIP
               </button>
@@ -259,7 +262,7 @@ const AdminViewTemplates = () => {
           {templates.map((template) => (
             <div
               key={template.id}
-              className="border rounded-lg shadow-md p-4 flex flex-col justify-between 
+              className="border shadow-md p-4 flex flex-col justify-between 
               bg-white/10 backdrop-blur-md text-white border-white/20 
               transform transition-transform duration-300 hover:scale-105"            >
               <div className="overflow-hidden">

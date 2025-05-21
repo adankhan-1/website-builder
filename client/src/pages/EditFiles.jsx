@@ -70,11 +70,11 @@ const EditFiles = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Edit Files : </h2>
+      <h2 className="text-2xl font-bold mb-4">Edit Files</h2>
 
       <button
         onClick={handleExit}
-        className="absolute top-1 right-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200"
+        className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200"
       >
         Exit Editor
       </button>

@@ -59,7 +59,7 @@ export default function AdminAddTemplate() {
         Object.keys(zip.files).map(async (filename) => {
           const file = zip.files[filename];
           if (!file.dir) {
-            const base64Extensions = /\.(jpg|jpeg|png|gif|eot|svg|ttf|woff2?|otf|webp)$/i;
+            const base64Extensions = /\.(jpg|jpeg|png|gif|eot|svg|ttf|woff2?|otf|webp|pdf|ico)$/i;
             const isBase64 = base64Extensions.test(filename);
             const content = await file.async(isBase64 ? "base64" : "string");
   

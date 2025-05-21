@@ -72,11 +72,8 @@ export const insertProject = async (req, res) => {
 
           // Fix src and href in HTML
           newContent = newContent.replace(
-            /(src|href)=["'](?!https?:\/\/)([^"']+)["']/g,
+            /(src|href)=["'](?!https?:\/\/|#|data:)([^"']+)["']/g,
             (match, attr, path) => {
-              if (path === '#' || path.endsWith('#')) {
-                return match; // skip
-              }
               const fixedPath = `http://localhost:3000/live-preview/project/${project.id}/assets/${path}`;
               return `${attr}="${fixedPath}"`;
             }
@@ -84,7 +81,7 @@ export const insertProject = async (req, res) => {
 
           // Fix url(...) in CSS
           newContent = newContent.replace(
-            /url\(["']?(?!https?:\/\/)([^"')]+)["']?\)/g,
+            /url\(["']?(?!https?:\/\/|#|data:)([^"')]+)["']?\)/g,
             (match, path) => {
               const fixedPath = `http://localhost:3000/live-preview/project/${project.id}/assets/${path}`;
               return `url("${fixedPath}")`;
@@ -152,10 +149,10 @@ export const getProject = async (req, res) => {
 
           // Fix src and href in HTML
           newContent = newContent.replace(
-            /(src|href)=["'](?!https?:\/\/)([^"']+)["']/g,
+            /(src|href)=["'](?!https?:\/\/|#|data:)([^"']+)["']/g,
             (match, attr, path) => {
-              if (path === '#' || path.endsWith('#')) {
-                return match; // skip
+              if (path.includes('#')) {
+                return match;
               }
               const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
               return `${attr}="${fixedPath}"`;
@@ -164,7 +161,7 @@ export const getProject = async (req, res) => {
 
           // Fix url(...) in CSS
           newContent = newContent.replace(
-            /url\(["']?(?!https?:\/\/)([^"')]+)["']?\)/g,
+            /url\(["']?(?!https?:\/\/|#|data:)([^"')]+)["']?\)/g,
             (match, path) => {
               const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
               return `url("${fixedPath}")`;

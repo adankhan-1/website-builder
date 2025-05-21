@@ -39,77 +39,126 @@ const EditProject = () => {
   }, [projectId]);
 
   const loadPageContent = (pageName, files) => {
+    console.log('Loading page content for:', pageName);
     const selectedFile = files.find(file => file.path === pageName);
     if (!selectedFile) return;
-  
+
     const imageEditingScript = `
-      <style>
-        .img-wrapper {
-          position: relative;
-          display: inline-block;
+  <style>
+    .img-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .edit-icon {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border-radius: 4px;
+      padding: 4px 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 999;
+      user-select: none;
+    }
+    .img-dimensions {
+      position: absolute;
+      bottom: 4px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-size: 14px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      z-index: 998;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const wrapImageWithEditor = (img) => {
+        if (img.closest('.img-wrapper')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'img-wrapper';
+        img.parentNode.insertBefore(wrapper, img);
+        wrapper.appendChild(img);
+
+        const icon = document.createElement('div');
+        icon.className = 'edit-icon';
+        icon.textContent = '✎';
+
+        const dim = document.createElement('div');
+        dim.className = 'img-dimensions';
+        const updateDims = () => {
+          dim.textContent = img.naturalWidth + '×' + img.naturalHeight;
+        };
+        if (img.complete) {
+          updateDims();
+        } else {
+          img.onload = updateDims;
         }
-        .edit-icon {
-          position: absolute;
-          top: 4px;
-          right: 4px;
-          background: rgba(0, 0, 0, 0.6);
-          color: white;
-          border-radius: 4px;
-          padding: 4px 6px;
-          font-size: 16px;
-          font-weight: bold;
-          cursor: pointer;
-          z-index: 999;
-          user-select: none;
-        }
-      </style>
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const wrapImageWithEditor = (img) => {
-            if (img.closest('.img-wrapper')) return;
-  
-            const wrapper = document.createElement('div');
-            wrapper.className = 'img-wrapper';
-            img.parentNode.insertBefore(wrapper, img);
-            wrapper.appendChild(img);
-  
-            const icon = document.createElement('div');
-            icon.className = 'edit-icon';
-            icon.textContent = '✎';
-  
-            icon.addEventListener('click', () => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = 'image/*';
-              input.style.display = 'none';
-  
-              input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => {
-                  img.src = reader.result;
-                };
-                reader.readAsDataURL(file);
-              };
-  
-              input.click();
-            });
-  
-            wrapper.appendChild(icon);
+
+        icon.addEventListener('click', () => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.style.display = 'none';
+
+          input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+              img.src = reader.result;
+              img.onload = updateDims;
+            };
+            reader.readAsDataURL(file);
           };
-  
-          const imgs = document.querySelectorAll('img');
-          imgs.forEach(wrapImageWithEditor);
+
+          input.click();
         });
-      </script>
-    `;
-  
-    const editableHtml = selectedFile.content
-      .replace(/<body([^>]*)>/i, `<body$1 contenteditable="true">`)
-      .replace(/<\/body>/i, `${imageEditingScript}</body>`);
-  
-    setIframeHtml(editableHtml);
+
+        wrapper.appendChild(icon);
+        wrapper.appendChild(dim);
+      };
+
+      const imgs = document.querySelectorAll('img');
+      imgs.forEach(wrapImageWithEditor);
+    });
+  </script>`;
+
+  const scrollFixScript = `
+  <script>
+    document.addEventListener('click', function(e){
+      const a = e.target.closest('a[href]');
+      if (!a) return;
+      const href = a.getAttribute('href');
+      const hashIdx = href.indexOf('#');
+      if (hashIdx !== -1) {
+        const frag = href.slice(hashIdx);
+        const target = document.querySelector(frag);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    });
+  </script>
+`;
+
+const editableHtml = selectedFile.content
+  .replace(
+    /<body([^>]*)>/i,
+    `<body$1 contenteditable="true">`
+  )
+  .replace(
+    /<\/body>/i,
+    `${imageEditingScript}\n${scrollFixScript}</body>`
+  );
+
+setIframeHtml(editableHtml);
   };  
 
   const handlePageChange = (event) => {
@@ -117,100 +166,6 @@ const EditProject = () => {
     setSelectedPage(selectedPage);
     loadPageContent(selectedPage, templateContent);
   };
-
-  // const handleSave = async () => {
-  //   const iframe = iframeRef.current;
-  //   if (!iframe || !iframe.contentDocument) return;
-
-  //   const doc = iframe.contentDocument;
-  //   const bodyElement = doc.body;
-
-  //   // Remove all edit icons
-  //   doc.querySelectorAll(".edit-icon").forEach((icon) => icon.remove());
-
-  //   // Unwrap images from .img-wrapper
-  //   doc.querySelectorAll(".img-wrapper").forEach((wrapper) => {
-  //     const img = wrapper.querySelector("img");
-  //     if (img) wrapper.parentNode.replaceChild(img, wrapper);
-  //   });
-
-  //   // Remove contenteditable
-  //   bodyElement.removeAttribute("contenteditable");
-
-  //   // Remove injected scripts and styles
-  //   doc.querySelectorAll("script, style").forEach((tag) => {
-  //     if (
-  //       tag.textContent.includes("wrapImageWithEditor") ||
-  //       tag.textContent.includes(".edit-icon")
-  //     ) {
-  //       tag.remove();
-  //     }
-  //   });
-
-  //   const editedBodyContent = bodyElement.innerHTML;
-  //   const bodyAttributes = Array.from(bodyElement.attributes)
-  //     .map((attr) => `${attr.name}="${attr.value}"`)
-  //     .join(" ");
-
-  //   const selectedFile = templateContent.find(
-  //     (file) => file.path === selectedPage
-  //   );
-  //   if (!selectedFile) return;
-
-  //   const updatedHtml = selectedFile.content.replace(
-  //     /<body[^>]*>[\s\S]*<\/body>/i,
-  //     `<body${
-  //       bodyAttributes ? " " + bodyAttributes : ""
-  //     }>${editedBodyContent}</body>`
-  //   );
-
-  //   const updatedFiles = templateContent.map((file) => {
-  //     if (file.path === selectedPage) {
-  //       return {
-  //         ...file,
-  //         content: updatedHtml,
-  //       };
-  //     }
-  //     return file;
-  //   });
-
-  //   const userId = localStorage.getItem("userId");
-  //   if (!userId) {
-  //     alert("User not logged in. Please log in first.");
-  //     return;
-  //   }
-
-  //   try {
-  //     const res = await fetch("http://localhost:3000/api/project", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         userId,
-  //         templateId,
-  //         projectId: currentProjectId,
-  //         name: "My Project",
-  //         content: updatedFiles,
-  //       }),
-  //     });
-
-  //     const data = await res.json();
-  //     if (res.ok) {
-  //       alert("Your changes have been saved successfully!");
-
-  //       const updatedProject = data.project;
-  //       if (updatedProject?.content) {
-  //         setTemplateContent(updatedProject.content);
-  //         loadPageContent(selectedPage, updatedProject.content);
-  //         setCurrentProjectId(updatedProject.id);
-  //       }
-  //     } else {
-  //       alert("Failed to save: " + data.error);
-  //     }
-  //   } catch (err) {
-  //     console.error("Save failed:", err);
-  //     alert("An error occurred while saving the project.");
-  //   }
-  // };
 
   const handleSave = async () => {
     const iframe = iframeRef.current;
@@ -305,6 +260,7 @@ const EditProject = () => {
   
       const data = await res.json();
       if (res.ok) {
+        console.log("Project saved successfully:", currentProjectId);
         alert("Your changes have been saved successfully!");
   
         const updatedProject = data.project;

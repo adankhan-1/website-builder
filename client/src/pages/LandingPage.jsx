@@ -15,7 +15,13 @@ const LandingPage = () => {
     <div className="min-h-screen bg-[#FFF2E9] text-gray-800 font-sans">
       {/* Navbar */}
       <nav className="flex justify-between items-center px-8 py-5 bg-white shadow">
-        <div className="text-2xl font-bold text-gray-800">Website Builder</div>
+        <a href="/">
+          <img
+            src="/website-builder-logo.png"
+            alt="Website Builder"
+            className="h-16 w-auto"
+          />
+        </a>{" "}
         <div className="space-x-4">
           <button
             onClick={handleLogin}
@@ -35,7 +41,7 @@ const LandingPage = () => {
       {/* Hero Section */}
       <div className="flex flex-col md:flex-row items-center justify-between px-8 md:px-20 py-20">
         {/* Left: Text content */}
-        <div className="md:w-1/2 mb-12 md:mb-0">
+        <div className="md:w-1/2 mb-12 md:mb-0 md:ml-20">
           <h1 className="text-4xl md:text-5xl font-semibold mb-6 leading-tight">
             Build your website <br /> the easy way
           </h1>

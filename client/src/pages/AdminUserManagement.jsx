@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import LogoutButton from '../components/LogoutButton';
 import BackButton from '../components/BackButton';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 export default function AdminUserManagement() {
+  const { type } = useParams();
   const [users, setUsers] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState(type || 'all');
 
   useEffect(() => {
     const fetchUsers = async () => {

@@ -83,25 +83,38 @@ export const getTemplateById = async (req, res) => {
 // };
 
 export const insertTemplate = async (req, res) => {
-    const { name, content, thumbnail } = req.body;
+  const { name, content, thumbnail } = req.body;
 
-    if(!name || !content) {
-        return res.status(400).json({ message: "Name and content of template are required" });
-    }
+  if (!name || !content) {
+    return res.status(400).json({ message: "Name and content of template are required" });
+  }
 
-    try {
-        const newTemplate = await Template.create({
-            name,
-            content,
-            thumbnail,
-        });
-        return res.status(201).json({ template: newTemplate });
-    
-      } catch (err) {
-        console.error("Error creating template:", err);
-        return res.status(500).json({ message: "Failed to create template due to server error" });
-      }
-}
+  // Check for null characters in any file content
+  const filesWithNullChar = content.filter(file =>
+    typeof file.content === 'string' && file.content.includes('\u0000')
+  );
+
+  if (filesWithNullChar.length > 0) {
+    console.error('Files with null characters detected:', filesWithNullChar.map(f => f.path));
+    return res.status(400).json({
+      message: 'One or more files contain unsupported null characters (\\u0000)',
+      problematicFiles: filesWithNullChar.map(f => f.path),
+    });
+  }
+
+  try {
+    const newTemplate = await Template.create({
+      name,
+      content,
+      thumbnail,
+    });
+    return res.status(201).json({ message: "Template created successfully" });
+
+  } catch (err) {
+    console.error("Error creating template:", err);
+    return res.status(500).json({ message: "Failed to create template due to server error" });
+  }
+};
 
 export const deleteTemplate = async (req, res) => {
     const { id } = req.params;

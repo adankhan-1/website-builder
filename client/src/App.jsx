@@ -91,7 +91,7 @@ export default function App() {
           }
         />
         <Route
-          path="/admin/user-management"
+          path="/admin/user-management/:type"
           element={
             <PrivateRoute>
               <AdminRoute>

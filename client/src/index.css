@@ -24,7 +24,7 @@ body,
 }
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: system-ui, helvetica, arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -88,4 +88,17 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.perspective {
+  perspective: 1000px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
 }

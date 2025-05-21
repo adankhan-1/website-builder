@@ -26,24 +26,39 @@ const Navbar = () => {
     <div className="relative z-50">
       <nav className="flex justify-between items-center px-8 py-3 bg-white shadow-md relative">
         {/* Left: Brand */}
-        <div className="text-3xl font-bold text-gray-800">Website Builder</div>
+        <a href = "/dashboard">
+        <img
+          src="/website-builder-logo.png"
+          alt="Website Builder"
+          className="h-16 w-auto"
+        />
+        </a>
 
         {/* Center: Navigation links with cards */}
         <div className="flex space-x-8">
           <div className="card bg-white p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 hover:translate-y-1">
-            <Link to="/dashboard" className="text-xl text-gray-800 hover:text-cyan-500">
+            <Link
+              to="/dashboard"
+              className="text-xl text-gray-800 hover:text-cyan-500"
+            >
               Dashboard
             </Link>
           </div>
 
           <div className="card bg-white p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 hover:translate-y-1">
-            <Link to="/templates" className="text-xl text-gray-800 hover:text-cyan-500">
+            <Link
+              to="/templates"
+              className="text-xl text-gray-800 hover:text-cyan-500"
+            >
               Templates
             </Link>
           </div>
 
           <div className="card bg-white p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 hover:translate-y-1">
-            <Link to="/projects" className="text-xl text-gray-800 hover:text-cyan-500">
+            <Link
+              to="/projects"
+              className="text-xl text-gray-800 hover:text-cyan-500"
+            >
               Projects
             </Link>
           </div>
