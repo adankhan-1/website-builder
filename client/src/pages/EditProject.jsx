@@ -11,11 +11,13 @@ const EditProject = () => {
   const [currentProjectId, setCurrentProjectId] = useState(null);
   const [templateId, setTemplateId] = useState(null);
 
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
     const fetchProject = async () => {
       try {
         console.log('Fetching project with ID:', projectId);
-        const res = await fetch(`http://localhost:3000/api/project/${projectId}`);
+        const res = await fetch(`${backendBaseUrl}/api/project/${projectId}`);
         const data = await res.json();
 
         if (!data.project || !Array.isArray(data.project.content)) {
@@ -211,7 +213,7 @@ setIframeHtml(editableHtml);
       `<body${bodyAttributes ? " " + bodyAttributes : ""}>${editedBodyContent}</body>`
     );
   
-    const projectAssetBase = `http://localhost:3000/live-preview/project/${currentProjectId}/assets/`;
+    const projectAssetBase = `${backendBaseUrl}/live-preview/project/${currentProjectId}/assets/`;
   
     // Function to reverse fixed paths to relative
     const revertPaths = (content) => {
@@ -246,7 +248,7 @@ setIframeHtml(editableHtml);
     }
   
     try {
-      const res = await fetch("http://localhost:3000/api/project", {
+      const res = await fetch(`${backendBaseUrl}/api/project`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

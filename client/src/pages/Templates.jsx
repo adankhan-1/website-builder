@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar.jsx';
 
 const TemplatesPage = () => {
   const [templates, setTemplates] = useState([]);
+  
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -20,12 +22,12 @@ const TemplatesPage = () => {
 
   // Live Preview handler
   const handleLivePreview = (templateId) => {
-    const previewUrl = `http://localhost:3000/live-preview/${templateId}`;
+    const previewUrl = `${backendBaseUrl}/live-preview/${templateId}`;
     window.open(previewUrl, '_blank');
   };
 
   const handleEditTemplate = (templateId) => {
-    const editUrl = `http://localhost:5173/create-project/${templateId}`;
+    const editUrl = `${frontendBaseUrl}/create-project/${templateId}`;
     window.open(editUrl, '_blank');
   };
 

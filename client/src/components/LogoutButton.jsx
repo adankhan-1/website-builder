@@ -5,7 +5,9 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:3000/api/auth/logout", {
+      const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
+
+      await fetch(`${backendBaseUrl}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });

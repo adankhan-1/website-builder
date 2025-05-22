@@ -7,6 +7,8 @@ const CreateProject = () => {
   const navigate = useNavigate();
   const { templateId } = useParams();
 
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
+
   const handleCreateProject = async () => {
     const userId = localStorage.getItem("userId");
     if (!userId) {
@@ -23,7 +25,7 @@ const CreateProject = () => {
     
     try {
       const res = await fetch(
-        `http://localhost:3000/api/template/${templateId}`, {
+        `${backendBaseUrl}/api/template/${templateId}`, {
           credentials: 'include',
         }
       );
@@ -39,7 +41,7 @@ const CreateProject = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:3000/api/project', {
+      const res = await fetch(`${backendBaseUrl}/api/project`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

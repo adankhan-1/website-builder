@@ -11,6 +11,9 @@ const Projects = () => {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [showExport, setShowExport] = useState(false);
 
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
+  const frontendBaseUrl = import.meta.env.VITE_FRONTEND_URL;
+
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -22,7 +25,7 @@ const Projects = () => {
 
       try {
         const res = await fetch(
-          `http://localhost:3000/api/project/user/${userId}`, {
+          `${backendBaseUrl}/api/project/user/${userId}`, {
             credentials: "include",
           }
         );
@@ -39,12 +42,12 @@ const Projects = () => {
   }, []);
 
   const handleLivePreview = (projectId) => {
-    const previewUrl = `http://localhost:3000/live-preview/project/${projectId}`;
+    const previewUrl = `${backendBaseUrl}/live-preview/project/${projectId}`;
     window.open(previewUrl, "_blank");
   };
 
   const handleEditProject = (projectId) => {
-    const editUrl = `http://localhost:5173/edit-project/${projectId}`;
+    const editUrl = `${frontendBaseUrl}/edit-project/${projectId}`;
     window.open(editUrl, "_blank");
   };
 
@@ -57,7 +60,7 @@ const Projects = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/project/${projectId}`,
+        `${backendBaseUrl}/api/project/${projectId}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -79,7 +82,7 @@ const Projects = () => {
 
   const handleExport = async (project) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/project/export/${project.id}`);
+      const response = await fetch(`${backendBaseUrl}/api/project/export/${project.id}`);
       const blob = await response.blob();
       saveAs(blob, `${project.name}.zip`);
     } catch (err) {

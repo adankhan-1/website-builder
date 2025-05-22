@@ -9,10 +9,12 @@ export default function AdminUserManagement() {
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState(type || 'all');
 
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/user/all');
+        const response = await axios.get(`${backendBaseUrl}/api/user/all`);
         setUsers(response.data.users);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -24,7 +26,7 @@ export default function AdminUserManagement() {
 
   const handleApprove = async (id) => {
     try {
-      await axios.put(`http://localhost:3000/api/user/approve/${id}`);
+      await axios.put(`${backendBaseUrl}/api/user/approve/${id}`);
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === id ? { ...user, approved: true } : user

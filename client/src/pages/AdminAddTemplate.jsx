@@ -9,6 +9,8 @@ export default function AdminAddTemplate() {
   const [templateName, setTemplateName] = useState('');
   const [thumbnailFile, setThumbnailFile] = useState(null);
 
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
+
   const handleUploadZip = async () => {
     if (!selectedZipFile || !templateName.trim()) {
       alert("Please select a ZIP file and enter a template name.");
@@ -81,7 +83,7 @@ export default function AdminAddTemplate() {
         })
       );
     
-      await axios.post('http://localhost:3000/api/template', {
+      await axios.post(`${backendBaseUrl}/api/template`, {
         name: templateName,
         content: files,
         thumbnail: thumbnailBase64,

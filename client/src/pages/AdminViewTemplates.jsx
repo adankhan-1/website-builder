@@ -17,6 +17,8 @@ const AdminViewTemplates = () => {
     const [newThumbnailFile, setNewThumbnailFile] = useState(null);
     const [newZipFile, setNewZipFile] = useState(null);
 
+    const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
+
     const fetchTemplates = async () => {
       try {
         const response = await fetchAllTemplates();
@@ -31,7 +33,7 @@ const AdminViewTemplates = () => {
     }, []);
 
     const handleLivePreview = (templateId) => {
-        const previewUrl = `http://localhost:3000/live-preview/${templateId}`;
+        const previewUrl = `${backendBaseUrl}/live-preview/${templateId}`;
         window.open(previewUrl, '_blank');
     };
 
@@ -75,7 +77,7 @@ const AdminViewTemplates = () => {
     const handleSaveName = async () => {
       try {
         await axios.patch(
-          `http://localhost:3000/api/template/${editingTemplate.id}`,
+          `${backendBaseUrl}/api/template/${editingTemplate.id}`,
           {
             name: editedName,
           }, {
@@ -98,7 +100,7 @@ const AdminViewTemplates = () => {
         const base64 = reader.result.split(",")[1];
         try {
           await axios.patch(
-            `http://localhost:3000/api/template/${editingTemplate.id}`,
+            `${backendBaseUrl}/api/template/${editingTemplate.id}`,
             {
               thumbnail: base64,
             }, {
@@ -145,7 +147,7 @@ const AdminViewTemplates = () => {
         );
     
         await axios.patch(
-          `http://localhost:3000/api/template/${editingTemplate.id}`,
+          `${backendBaseUrl}/api/template/${editingTemplate.id}`,
           {
             content: files,
           },

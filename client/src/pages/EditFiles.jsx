@@ -13,7 +13,7 @@ const EditFiles = () => {
     // Fetch project content from backend
     const fetchProjectFiles = async () => {
         try {
-          const response = await fetch(`http://localhost:3000/api/project/${projectId}`);
+          const response = await fetch(`${backendBaseUrl}/api/project/${projectId}`);
           const data = await response.json();
           setFiles(data.project.content || []);
         } catch (err) {
@@ -41,7 +41,7 @@ const EditFiles = () => {
         file.path === selectedFile.path ? { ...file, content: fileContent } : file
       );
 
-      const res = await fetch("http://localhost:3000/api/project", {
+      const res = await fetch(`${backendBaseUrl}/api/project`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
