@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import session from 'express-session';
 import SequelizeStore from 'connect-session-sequelize';
@@ -6,24 +9,29 @@ import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/project.js';
 import templateRoutes from './routes/template.js';
 import userRoutes from './routes/user.js';
-import dotenv from 'dotenv';
 import sequelize from './config/config.js';
 import Template from './models/template.js';
 import path from 'path';
 import Project from './models/project.js';
 
-dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Sync database before starting app
+sequelize.sync({ alter: true })
+  .then(() => {
+    console.log("Database synced");
+  })
+  .catch(err => {
+    console.error("Failed to sync database:", err);
+  });
+
 const SequelizeSession = SequelizeStore(session.Store);
 
 app.use(cors({ origin: process.env.REACT_APP_URL, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 
-const sessionStore = new SequelizeSession({
-  db: sequelize,
-});
-
+const sessionStore = new SequelizeSession({ db: sequelize });
 sessionStore.sync();
 
 app.use(session({
