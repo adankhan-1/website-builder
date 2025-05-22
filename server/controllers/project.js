@@ -31,36 +31,6 @@ export const insertProject = async (req, res) => {
       });
     }
 
-    
-
-    // if (content) {
-    //   const fixedContent = content.map(file => {
-    //     let newContent = file.content;
-      
-    //     if (file.path.endsWith('.html') || file.path.endsWith('.css') || file.path.endsWith('.scss')) {
-    //       newContent = newContent.replace(
-    //         /http:\/\/localhost:3000\/live-preview\/[^/]+\/assets\/([^"')\s]*)/g,
-    //         (match, remainingPath) => {
-    //           // If it's just "#", or ends with "#", move it outside the 'assets' path
-    //           if (remainingPath === '#' || remainingPath.endsWith('#')) {
-    //             return `http://localhost:3000/live-preview/project/${project.id}/${remainingPath}`;
-    //           }
-    //           return `http://localhost:3000/live-preview/project/${project.id}/assets/${remainingPath}`;
-    //         }
-    //       );
-    //     }        
-      
-    //     return {
-    //       ...file,
-    //       content: newContent,
-    //     };
-    //   });
-      
-    //   await project.update({ content: fixedContent });
-    // }
-
-    // res.status(201).json({ message: 'Project saved successfully', project });
-
     let fixedContent = project.content;
 
     if (Array.isArray(fixedContent)) {
@@ -74,7 +44,7 @@ export const insertProject = async (req, res) => {
           newContent = newContent.replace(
             /(src|href)=["'](?!https?:\/\/|#|data:)([^"']+)["']/g,
             (match, attr, path) => {
-              const fixedPath = `http://localhost:3000/live-preview/project/${project.id}/assets/${path}`;
+              const fixedPath = `${process.env.BACKEND_URL}/live-preview/project/${project.id}/assets/${path}`;
               return `${attr}="${fixedPath}"`;
             }
           );
@@ -83,7 +53,7 @@ export const insertProject = async (req, res) => {
           newContent = newContent.replace(
             /url\(["']?(?!https?:\/\/|#|data:)([^"')]+)["']?\)/g,
             (match, path) => {
-              const fixedPath = `http://localhost:3000/live-preview/project/${project.id}/assets/${path}`;
+              const fixedPath = `${process.env.BACKEND_URL}/live-preview/project/${project.id}/assets/${path}`;
               return `url("${fixedPath}")`;
             }
           );
@@ -154,7 +124,7 @@ export const getProject = async (req, res) => {
               if (path.includes('#')) {
                 return match;
               }
-              const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
+              const fixedPath = `${process.env.BACKEND_URL}/live-preview/project/${id}/assets/${path}`;
               return `${attr}="${fixedPath}"`;
             }
           );
@@ -163,7 +133,7 @@ export const getProject = async (req, res) => {
           newContent = newContent.replace(
             /url\(["']?(?!https?:\/\/|#|data:)([^"')]+)["']?\)/g,
             (match, path) => {
-              const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
+              const fixedPath = `${process.env.BACKEND_URL}/live-preview/project/${id}/assets/${path}`;
               return `url("${fixedPath}")`;
             }
           );

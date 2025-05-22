@@ -17,7 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SequelizeSession = SequelizeStore(session.Store);
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: process.env.REACT_APP_URL, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 
 const sessionStore = new SequelizeSession({
@@ -60,34 +60,16 @@ app.get('/live-preview/:id', async (req, res) => {
     htmlWithFixedPaths = htmlWithFixedPaths.replace(
       /(src|href)=["'](?!https?:\/\/|#|data:)([^"']+)["']/g,
       (match, attr, path) => {
-        const fixedPath = `http://localhost:3000/live-preview/${id}/assets/${path}`;
+        const fixedPath = `${process.env.BACKEND_URL}/live-preview/${id}/assets/${path}`;
         return `${attr}="${fixedPath}"`;
       }
     );
 
     // Fix CSS url(...) paths
     htmlWithFixedPaths = htmlWithFixedPaths.replace(/url\(["']?(?!https?:\/\/|#|data:)([^"')]+)["']?\)/g, (match, path) => {
-      const fixedPath = `http://localhost:3000/live-preview/${id}/assets/${path}`;
+      const fixedPath = `${process.env.BACKEND_URL}/live-preview/${id}/assets/${path}`;
       return `url("${fixedPath}")`;
     });
-
-    // Inject a script to disable anchor tags with href="#" to prevent navigation issues
-    // const preventAnchorReloadScript = `
-    //     <script>
-    //       document.addEventListener('DOMContentLoaded', () => {
-    //         document.querySelectorAll('a[href="#"]').forEach(link => {
-    //           link.addEventListener('click', e => e.preventDefault());
-    //         });
-    //       });
-    //     </script>
-    //   `;
-
-    // // Inject the script before </body> or at end if </body> not present
-    // if (htmlWithFixedPaths.includes('</body>')) {
-    //   htmlWithFixedPaths = htmlWithFixedPaths.replace('</body>', `${preventAnchorReloadScript}</body>`);
-    // } else {
-    //   htmlWithFixedPaths += preventAnchorReloadScript;
-    // }
 
     res.send(htmlWithFixedPaths);
   } catch (err) {
@@ -117,34 +99,16 @@ app.get('/live-preview/project/:id', async (req, res) => {
     htmlWithFixedPaths = htmlWithFixedPaths.replace(
       /(src|href)=["'](?!https?:\/\/|#|data:)([^"']+)["']/g,
       (match, attr, path) => {
-        const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
+        const fixedPath = `${process.env.BACKEND_URL}/live-preview/project/${id}/assets/${path}`;
         return `${attr}="${fixedPath}"`;
       }
     );
 
     // Fix CSS url(...) paths
     htmlWithFixedPaths = htmlWithFixedPaths.replace(/url\(["']?(?!https?:\/\/|#|data:)([^"')]+)["']?\)/g, (match, path) => {
-      const fixedPath = `http://localhost:3000/live-preview/project/${id}/assets/${path}`;
+      const fixedPath = `${process.env.BACKEND_URL}/live-preview/project/${id}/assets/${path}`;
       return `url("${fixedPath}")`;
     });
-
-    // Inject a script to disable anchor tags with href="#" to prevent navigation issues
-    // const preventAnchorReloadScript = `
-    //     <script>
-    //       document.addEventListener('DOMContentLoaded', () => {
-    //         document.querySelectorAll('a[href="#"]').forEach(link => {
-    //           link.addEventListener('click', e => e.preventDefault());
-    //         });
-    //       });
-    //     </script>
-    //   `;
-
-    // // Inject the script before </body> or at end if </body> not present
-    // if (htmlWithFixedPaths.includes('</body>')) {
-    //   htmlWithFixedPaths = htmlWithFixedPaths.replace('</body>', `${preventAnchorReloadScript}</body>`);
-    // } else {
-    //   htmlWithFixedPaths += preventAnchorReloadScript;
-    // }
 
     res.send(htmlWithFixedPaths);
   } catch (err) {
