@@ -6,6 +6,7 @@ const TemplatesPage = () => {
   const [templates, setTemplates] = useState([]);
   
   const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
+  const frontendBaseUrl = import.meta.env.VITE_FRONTEND_URL;
 
   useEffect(() => {
     const fetchTemplates = async () => {
