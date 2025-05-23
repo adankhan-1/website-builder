@@ -34,6 +34,8 @@ app.use(express.json({ limit: '10mb' }));
 const sessionStore = new SequelizeSession({ db: sequelize });
 sessionStore.sync();
 
+app.set('trust proxy', 1);
+
 app.use(session({
   secret: process.env.SESSION_SECRET,
   store: sessionStore,
